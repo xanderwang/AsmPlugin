@@ -1,0 +1,2 @@
+include ':xaop_app'
+include ':xaop_plugin'
