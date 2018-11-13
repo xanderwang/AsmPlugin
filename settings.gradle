@@ -1,2 +1,2 @@
-include ':xaop_app'
+include ':xaop_app', ':apt_lib', ':apt_process'
 include ':xaop_plugin'
