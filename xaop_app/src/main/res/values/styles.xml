@@ -8,4 +8,11 @@
     <item name="colorAccent">@color/colorAccent</item>
   </style>
 
+  <style name="no_radio_img">
+    <item name="android:drawableLeft">@null</item>
+    <item name="android:drawableTop">@null</item>
+    <item name="android:drawableRight">@null</item>
+    <item name="android:drawableBottom">@null</item>
+  </style>
+
 </resources>
