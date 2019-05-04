@@ -2,35 +2,35 @@
 
 buildscript {
 
-    repositories {
-        maven {
-            url uri('./repos')
-        }
-        google()
-        jcenter()
+  repositories {
+    maven {
+      url uri('./repos')
     }
+    google()
+    jcenter()
+  }
 
-    dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
+  dependencies {
+    classpath 'com.android.tools.build:gradle:3.2.1'
 
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
+    // NOTE: Do not place your application dependencies here; they belong
+    // in the individual module build.gradle files
 
-        //格式为 --> group:module:version
-        classpath 'com.xander:xaop:1.0.0'
-    }
+    //格式为 --> group:module:version
+//    classpath 'com.xander:xaop:1.0.0'
+  }
 }
 
 allprojects {
-    repositories {
-        maven {
-            url uri('./repos')
-        }
-        google()
-        jcenter()
+  repositories {
+    maven {
+      url uri('./repos')
     }
+    google()
+    jcenter()
+  }
 }
 
 task clean(type: Delete) {
-    delete rootProject.buildDir
+  delete rootProject.buildDir
 }
