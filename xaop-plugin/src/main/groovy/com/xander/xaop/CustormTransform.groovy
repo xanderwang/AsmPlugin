@@ -74,7 +74,7 @@ public class CustormTransform extends Transform {
   @Override
   void transform(TransformInvocation transformInvocation)
       throws TransformException, InterruptedException, IOException {
-    //super.transform(transformInvocation)
+    super.transform(transformInvocation)
     println(":----------------------------------------:start")
 //    println("transform:" + new Gson().toJson(transformInvocation.context))
     // 这里是关键代码，就是如何处理字节码的，处理自己码我们需要 asm 工具

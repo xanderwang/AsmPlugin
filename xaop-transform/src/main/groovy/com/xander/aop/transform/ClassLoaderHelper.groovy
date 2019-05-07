@@ -1,4 +1,4 @@
-package com.quinn.hunter.transform.asm
+package com.xander.aop.transform
 
 import com.android.build.api.transform.DirectoryInput
 import com.android.build.api.transform.JarInput
@@ -12,7 +12,7 @@ public class ClassLoaderHelper {
 
   public static URLClassLoader getClassLoader(Collection<TransformInput> inputs,
       Collection<TransformInput> referencedInputs, Project project) throws MalformedURLException {
-    ImmutableList.Builder<URL> urls = new ImmutableList.Builder<>()
+    ImmutableList.Builder<URL> urls = new ImmutableList.Builder<URL>()
     String androidJarPath = getAndroidJarPath(project)
     File file = new File(androidJarPath)
     URL androidJarURL = file.toURI().toURL()

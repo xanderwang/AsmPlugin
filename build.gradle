@@ -17,13 +17,13 @@ buildscript {
     // in the individual module build.gradle files
 
     //格式为 --> group:module:version
-    classpath 'com.xander:xaop:1.0.0'
+    classpath 'com.xander.xaop:gradle:1.0.0'
   }
 }
 
 allprojects {
   repositories {
-    maven { url uri('./repos') }
+    maven { url uri('../repos') }
     maven { url "https://maven.aliyun.com/repository/jcenter" }
     maven { url "https://maven.aliyun.com/repository/google" }
     //    google()

@@ -1,51 +1,51 @@
-package com.xander.xaop.test;
+package com.xander.xaop.test
 
-import com.quinn.hunter.transform.asm.BaseWeaver;
-import com.xander.xaop.TestHunterExtension;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.ClassWriter;
+import com.xander.aop.transform.BaseWeaver
+import com.xander.aop.transform.XaopConfig
+import org.objectweb.asm.ClassVisitor
+import org.objectweb.asm.ClassWriter
 
 public class TestWeaver extends BaseWeaver {
 
-  private static final String PLUGIN_LIBRARY = "com.hunter.library.test";
+  private static final String PLUGIN_LIBRARY = "com.xander.xaop.test"
 
-  private TestHunterExtension tetsHunterExtension;
+  private XaopConfig config
 
   @Override public void setExtension(Object extension) {
     if (extension == null) {
-      return;
+      return
     }
-    this.tetsHunterExtension = (TestHunterExtension) extension;
+    this.config = (XaopConfig) extension
   }
 
   @Override public boolean isWeavableClass(String fullQualifiedClassName) {
-    boolean superResult = super.isWeavableClass(fullQualifiedClassName);
-    boolean isByteCodePlugin = fullQualifiedClassName.startsWith(PLUGIN_LIBRARY);
+    boolean superResult = super.isWeavableClass(fullQualifiedClassName)
+    boolean isByteCodePlugin = fullQualifiedClassName.startsWith(PLUGIN_LIBRARY)
     if (tetsHunterExtension != null) {
       //whitelist is prior to to blacklist
-      if (!tetsHunterExtension.whitelist.isEmpty()) {
-        boolean inWhiteList = false;
-        for (String item : tetsHunterExtension.whitelist) {
+      if (!config.whitePackageList.isEmpty()) {
+        boolean inWhiteList = false
+        for (String item : config.whitePackageList) {
           if (fullQualifiedClassName.startsWith(item)) {
-            inWhiteList = true;
+            inWhiteList = true
           }
         }
-        return superResult && !isByteCodePlugin && inWhiteList;
+        return superResult && !isByteCodePlugin && inWhiteList
       }
       if (!tetsHunterExtension.blacklist.isEmpty()) {
-        boolean inBlackList = false;
+        boolean inBlackList = false
         for (String item : tetsHunterExtension.blacklist) {
           if (fullQualifiedClassName.startsWith(item)) {
-            inBlackList = true;
+            inBlackList = true
           }
         }
-        return superResult && !isByteCodePlugin && !inBlackList;
+        return superResult && !isByteCodePlugin && !inBlackList
       }
     }
-    return superResult && !isByteCodePlugin;
+    return superResult && !isByteCodePlugin
   }
 
   @Override protected ClassVisitor wrapClassWriter(ClassWriter classWriter) {
-    return new TestClassAdapter(classWriter);
+    return new TestClassAdapter(classWriter)
   }
 }
