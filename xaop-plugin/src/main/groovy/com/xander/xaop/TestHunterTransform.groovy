@@ -1,41 +1,36 @@
-package com.xander.xaop;
+package com.xander.xaop
 
-import com.android.build.api.transform.Context;
-import com.android.build.api.transform.TransformException;
-import com.android.build.api.transform.TransformInput;
-import com.android.build.api.transform.TransformOutputProvider;
-import com.quinn.hunter.transform.HunterTransform;
-import com.quinn.hunter.transform.RunVariant;
-import com.xander.xaop.test.TestWeaver;
-import java.io.IOException;
-import java.util.Collection;
-import org.gradle.api.Project;
+import com.android.build.api.transform.TransformException
+import com.android.build.api.transform.TransformInvocation
+import com.xander.aop.transform.XaopConfig
+import com.xander.aop.transform.XaopTransform
+import com.xander.xaop.test.TestWeaver
+import org.gradle.api.Project
 
-public class TestHunterTransform extends HunterTransform {
-  private Project project;
-  private TestHunterExtension testHunterExtension;
+public class TestHunterTransform extends XaopTransform {
+  private Project project
 
   public TestHunterTransform(Project project) {
-    super(project);
-    this.project = project;
-    project.getExtensions().create("testHunterExt", TestHunterExtension.class);
-    this.bytecodeWeaver = new TestWeaver();
+    super(project)
+    this.project = project
+    project.getExtensions().create("aopConfig", XaopConfig.class)
+    this.weaver = new TestWeaver()
   }
 
-  @Override public void transform(Context context, Collection<TransformInput> inputs,
-      Collection<TransformInput> referencedInputs, TransformOutputProvider outputProvider,
-      boolean isIncremental) throws IOException, TransformException, InterruptedException {
-    testHunterExtension =
-        (TestHunterExtension) project.getExtensions().getByName("testHunterExt");
-    bytecodeWeaver.setExtension(testHunterExtension);
-    super.transform(context, inputs, referencedInputs, outputProvider, isIncremental);
+  @Override
+  void transform(TransformInvocation transformInvocation)
+      throws TransformException, InterruptedException, IOException {
+    weaver.setExtension(getXaopConfig())
+    super.transform(transformInvocation)
   }
 
-  @Override protected RunVariant getRunVariant() {
-    return testHunterExtension.runVariant;
+  @Override
+  protected XaopConfig getXaopConfig() {
+    return (XaopConfig) project.getExtensions().getByName("aopConfig")
   }
 
-  @Override protected boolean inDuplcatedClassSafeMode() {
-    return testHunterExtension.duplcatedClassSafeMode;
+  @Override 
+  protected boolean inDuplcatedClassSafeMode() {
+    return getXaopConfig().duplcatedClassSafeMode
   }
 }

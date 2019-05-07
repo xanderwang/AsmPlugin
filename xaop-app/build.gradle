@@ -1,15 +1,3 @@
-class DemoPlugin implements Plugin<Project> {
-
-  @Override
-  void apply(Project project) {
-    println "=============================="
-    println 'hello, DemoPlugin!!'
-    println "=============================="
-  }
-}
-
-apply plugin: DemoPlugin
-
 apply plugin: 'com.android.application'
 
 // com.xander.xaop 为 resources/META-INF/gradle-plugins 下的 properties 文件名称

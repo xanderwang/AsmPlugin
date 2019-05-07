@@ -6,20 +6,10 @@ def xaop_version = "1.0.0"
 
 uploadArchives {
 
-  File repos = file('../repos/com')
-  if (repos.exists()) {
-    //    commandLine "rm", "-rf", "../repos/com"
-    //    Process process = "rm -rf ../repos/com".exec()
-    //    def result = process.waitFor() == 0
-    //    def result = repos.delete()
-    //    println "old repos delete result:${result}"
-  }
-  println "repos exists:${repos.exists()}"
-
   repositories.mavenDeployer {
     repository(url: uri('../repos'))
-    pom.groupId = 'com.xander'
-    pom.artifactId = 'xaop'
+    pom.groupId = 'com.xander.xaop'
+    pom.artifactId = 'gradle'
     pom.version = "$xaop_version"
   }
 }
@@ -30,7 +20,6 @@ dependencies {
 
   implementation 'com.android.tools.build:gradle:3.2.1'
   implementation 'com.android.tools.build:gradle-api:3.2.1'
-
   implementation 'commons-io:commons-io:2.6'
   implementation 'commons-codec:commons-codec:1.10'
   //noinspection GradleDependency
@@ -39,10 +28,10 @@ dependencies {
   implementation 'org.ow2.asm:asm-util:5.1'
   //noinspection GradleDependency
   implementation 'org.ow2.asm:asm-commons:5.1'
-
-  implementation 'com.quinn.hunter:hunter-transform:0.9.0'
+  implementation 'com.xander.xaop:transform:1.0.0'
+  //api project(':xaop-transform')
 }
 
-repositories {
-  jcenter()
-}
+//repositories {
+//  jcenter()
+//}

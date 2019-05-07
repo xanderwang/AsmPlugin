@@ -1,5 +1,18 @@
 apply plugin: 'groovy'
 
+apply plugin: 'maven'
+
+def transform_version = "1.0.0"
+
+uploadArchives {
+  repositories.mavenDeployer {
+    repository(url: uri('../repos'))
+    pom.groupId = 'com.xander.xaop'
+    pom.artifactId = 'transform'
+    pom.version = "$transform_version"
+  }
+}
+
 dependencies {
   implementation fileTree(dir: 'libs', include: ['*.jar'])
 
@@ -19,6 +32,6 @@ dependencies {
   implementation 'org.ow2.asm:asm-commons:5.1'
 }
 
-repositories {
-  jcenter()
-}
+//repositories {
+//  jcenter()
+//}
