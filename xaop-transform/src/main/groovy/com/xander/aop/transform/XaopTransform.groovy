@@ -60,7 +60,7 @@ public class XaopTransform extends Transform {
       throws TransformException, InterruptedException, IOException {
     //super.transform(transformInvocation)
     boolean skip = false
-    XaopConfig config = getXaopConfig()
+    config = getXaopConfig()
     println "config:${config}"
     String variantName = transformInvocation.context.variantName
     if ("debug".equals(variantName)) {
@@ -87,9 +87,11 @@ public class XaopTransform extends Transform {
             jarInput.getContentTypes(),
             jarInput.getScopes(),
             Format.JAR)
-        println "jarInput:${jarInput.getFile().getAbsolutePath()},dest:${dest.getAbsolutePath()}"
-        if (skip) {
-          FileUtils.copyFile(jarInput, dest)
+        if (config.log) {
+          println "jarInput:${jarInput.getFile().getAbsolutePath()},dest:${dest.getAbsolutePath()}"
+        }
+        if (skip || true) {
+          FileUtils.copyFile(jarInput.getFile(), dest)
           continue
         }
         Status status = jarInput.getStatus()
@@ -99,7 +101,7 @@ public class XaopTransform extends Transform {
               break
             case ADDED:
             case CHANGED:
-              transformJar(jarInput.getFile(), dest, status)
+              transformJar(jarInput.getFile(), dest)
               break
             case REMOVED:
               if (dest.exists()) {
@@ -113,54 +115,56 @@ public class XaopTransform extends Transform {
             cleanDexBuilderFolder(dest)
             flagForCleanDexBuilderFolder = true
           }
-          transformJar(jarInput.getFile(), dest, status)
+          transformJar(jarInput.getFile(), dest)
         }
       }
-    }
 
-    for (DirectoryInput directoryInput : input.getDirectoryInputs()) {
-      File dest = outputProvider.getContentLocation(directoryInput.getName(),
-          directoryInput.getContentTypes(), directoryInput.getScopes(),
-          Format.DIRECTORY)
-      println "directoryInput:${directoryInput.getFile().getAbsolutePath()},dest:${dest.getAbsolutePath()}"
-      FileUtils.forceMkdir(dest)
-      if (skip) {
-        FileUtils.copyDirectory(directoryInput.getFile(), dest)
-        continue
-      }
-      if (transformInvocation.incremental) {
-        String srcDirPath = directoryInput.getFile().getAbsolutePath()
-        String destDirPath = dest.getAbsolutePath()
-        Map<File, Status> fileStatusMap = directoryInput.getChangedFiles()
-        for (Map.Entry<File, Status> changedFile : fileStatusMap.entrySet()) {
-          Status status = changedFile.getValue()
-          File inputFile = changedFile.getKey()
-          String destFilePath = inputFile.getAbsolutePath().replace(srcDirPath, destDirPath)
-          File destFile = new File(destFilePath)
-          switch (status) {
-            case NOTCHANGED:
-              break
-            case REMOVED:
-              if (destFile.exists()) {
-                //noinspection ResultOfMethodCallIgnored
-                destFile.delete()
-              }
-              break
-            case ADDED:
-            case CHANGED:
-              try {
-                FileUtils.touch(destFile)
-              } catch (IOException e) {
-                //maybe mkdirs fail for some strange reason, try again.
-                Files.createParentDirs(destFile)
-              }
-              transformSingleFile(inputFile, destFile, srcDirPath)
-              break
-          }
+      for (DirectoryInput directoryInput : input.getDirectoryInputs()) {
+        File dest = outputProvider.getContentLocation(directoryInput.getName(),
+            directoryInput.getContentTypes(), directoryInput.getScopes(),
+            Format.DIRECTORY)
+        if (config.log) {
+          println "directoryInput:${directoryInput.getFile().getAbsolutePath()},dest:${dest.getAbsolutePath()}"
         }
-      } else {
-        transformDir(directoryInput.getFile(), directoryInput.getFile().getAbsolutePath(),
-            dest.getAbsolutePath())
+        FileUtils.forceMkdir(dest)
+        if (skip) {
+          FileUtils.copyDirectory(directoryInput.getFile(), dest)
+          continue
+        }
+        if (transformInvocation.incremental) {
+          String srcDirPath = directoryInput.getFile().getAbsolutePath()
+          String destDirPath = dest.getAbsolutePath()
+          Map<File, Status> fileStatusMap = directoryInput.getChangedFiles()
+          for (Map.Entry<File, Status> changedFile : fileStatusMap.entrySet()) {
+            Status status = changedFile.getValue()
+            File inputFile = changedFile.getKey()
+            String destFilePath = inputFile.getAbsolutePath().replace(srcDirPath, destDirPath)
+            File destFile = new File(destFilePath)
+            switch (status) {
+              case NOTCHANGED:
+                break
+              case REMOVED:
+                if (destFile.exists()) {
+                  //noinspection ResultOfMethodCallIgnored
+                  destFile.delete()
+                }
+                break
+              case ADDED:
+              case CHANGED:
+                try {
+                  FileUtils.touch(destFile)
+                } catch (IOException e) {
+                  //maybe mkdirs fail for some strange reason, try again.
+                  Files.createParentDirs(destFile)
+                }
+                transformSingleFile(inputFile, destFile, srcDirPath)
+                break
+            }
+          }
+        } else {
+          transformDir(directoryInput.getFile(), directoryInput.getFile().getAbsolutePath(),
+              dest.getAbsolutePath())
+        }
       }
     }
 
@@ -171,39 +175,63 @@ public class XaopTransform extends Transform {
 
   protected void transformSingleFile(final File inputFile, final File outputFile,
       final String srcBaseDir) {
-    println "transformSingleFile inputFile:${inputFile.getAbsolutePath()}" +
-        ",outputFile:${outputFile.getAbsolutePath()},srcBaseDir:${srcBaseDir}"
+    if (config.log) {
+      if( config.log ) {
+        println "transformSingleFile inputFile:${inputFile.getAbsolutePath()}"
+        println "transformSingleFile outputFile:${outputFile.getAbsolutePath()}"
+      }
+    }
     waitableExecutor.execute({
-      weaver.weaveSingleClassToFile(inputFile, outputFile, srcBaseDir)
+      weaver.weaveSingleClass(inputFile, outputFile, srcBaseDir)
       return null
     })
   }
 
   protected void transformDir(final File sourceDir, final String inputDirPath,
       final String outputDirPath) throws IOException {
-    println "transformDir sourceDir:${sourceDir.getAbsolutePath()},inputDirPath:${inputDirPath}" +
-        ",outputDirPath:${outputDirPath}"
     if (null != sourceDir && sourceDir.isDirectory()) {
-      // 一次处理一个文件夹下面的文件，防止创建的任务过多
-      waitableExecutor.execute({
-        for (File sourceFile : sourceDir.listFiles()) {
-          if (sourceFile.isDirectory()) {
-            transformDir(file, inputDirPath, outputDirPath)
-          } else {
-            String filePath = sourceFile.getAbsolutePath()
-            File outputFile = new File(filePath.replace(inputDirPath, outputDirPath))
-            weaver.weaveSingleClassToFile(file, outputFile, inputDirPath)
-          }
+      File[] files = sourceDir.listFiles()
+      if (null == files || files.length == 0) {
+        return
+      }
+      ArrayList<File> childFiles = new ArrayList<>()
+      for (File sourceFile : sourceDir.listFiles()) {
+        if (sourceFile.isDirectory()) {
+          transformDir(sourceFile, inputDirPath, outputDirPath)
+        } else {
+          childFiles.add(sourceFile)
         }
-      })
+      }
+      // 一次处理一个文件夹下面的文件，防止创建的任务过多
+      if (!childFiles.isEmpty()) {
+        transformFileList(childFiles, inputDirPath, outputDirPath)
+      }
     }
   }
 
+  protected void transformFileList(final ArrayList<File> sourceList, final String inputDirPath,
+      final String outputDirPath) {
+    waitableExecutor.execute({
+      for (File sourceFile : sourceList) {
+        String sourceFilePath = sourceFile.getAbsolutePath()
+        File outputFile = new File(sourceFilePath.replace(inputDirPath, outputDirPath))
+        if( config.log ) {
+          println "transformFileList sourceFile:${sourceFilePath}"
+          println "transformFileList outputFile:${outputFile.getAbsolutePath()}"
+        }
+        weaver.weaveSingleClass(sourceFile, outputFile, inputDirPath)
+      }
+    })
+  }
+
   protected void transformJar(final File srcJar, final File destJar) {
-    //FileUtils.copyFile(srcJar, destJar)
-    println "transformJar srcJar:${srcJar.getAbsolutePath()},destJar:${destJar.getAbsolutePath()}"
+    if( config.log ) {
+      println "transformJar srcJar:${srcJar.getAbsolutePath()}"
+      println "transformJar destJar:${destJar.getAbsolutePath()}"
+    }
     waitableExecutor.execute({
       weaver.weaveJar(srcJar, destJar)
+      return null
     })
   }
 
@@ -216,7 +244,7 @@ public class XaopTransform extends Transform {
         println("clean dexBuilder folder = " + file.getAbsolutePath())
         if (file.exists() && file.isDirectory()) {
           FileUtils.deleteDirectory(file)
-          //          com.android.utils.FileUtils.deleteDirectoryContents(file)
+          //com.android.utils.FileUtils.deleteDirectoryContents(file)
         }
       } catch (Exception e) {
         e.printStackTrace()
