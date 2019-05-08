@@ -1,11 +1,12 @@
 package com.xander.aop.transform
 
 public class XaopConfig {
+  boolean log = false
   boolean debugSkip = false
   boolean releaseSkip = true
-  boolean duplcatedClassSafeMode = false;
-  ArrayList<String> whitePackageList = new ArrayList<>()
-  ArrayList<String> whiteMethodList = new ArrayList<>()
+  boolean duplcatedClassSafeMode = false
+  ArrayList<String> whiteList = new ArrayList<>()
+  ArrayList<String> blackList = new ArrayList<>()
 
   @Override
   String toString() {

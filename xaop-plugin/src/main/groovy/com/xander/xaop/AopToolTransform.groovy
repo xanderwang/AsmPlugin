@@ -4,24 +4,28 @@ import com.android.build.api.transform.TransformException
 import com.android.build.api.transform.TransformInvocation
 import com.xander.aop.transform.XaopConfig
 import com.xander.aop.transform.XaopTransform
-import com.xander.xaop.test.TestWeaver
+import com.xander.xaop.test.ToolWeaver
 import org.gradle.api.Project
 
-public class TestHunterTransform extends XaopTransform {
+public class AopToolTransform extends XaopTransform {
   private Project project
 
-  public TestHunterTransform(Project project) {
+  public AopToolTransform(Project project) {
     super(project)
     this.project = project
     project.getExtensions().create("aopConfig", XaopConfig.class)
-    this.weaver = new TestWeaver()
+    this.weaver = new ToolWeaver()
   }
 
   @Override
   void transform(TransformInvocation transformInvocation)
       throws TransformException, InterruptedException, IOException {
     weaver.setExtension(getXaopConfig())
-    super.transform(transformInvocation)
+    try {
+      super.transform(transformInvocation)
+    } catch(Exception e) {
+      e.printStackTrace()
+    }
   }
 
   @Override

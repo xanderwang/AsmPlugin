@@ -4,13 +4,13 @@ import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
 
-public class TestClassAdapter extends ClassVisitor {
+public class ToolClassAdapter extends ClassVisitor {
 
   private String className
 
   private boolean isHeritedFromBlockHandler = false
 
-  TestClassAdapter(final ClassVisitor cv) {
+  ToolClassAdapter(final ClassVisitor cv) {
     super(Opcodes.ASM5, cv)
   }
 
@@ -35,7 +35,7 @@ public class TestClassAdapter extends ClassVisitor {
     if (isHeritedFromBlockHandler) {
       return mv
     } else {
-      return mv == null ? null : new TestMethodAdapter(
+      return mv == null ? null : new ToolMethodAdapter(
           className + File.separator + name, access, desc, mv)
     }
   }

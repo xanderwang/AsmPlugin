@@ -5,13 +5,21 @@ apply plugin: 'maven'
 def xaop_version = "1.0.0"
 
 uploadArchives {
-
   repositories.mavenDeployer {
     repository(url: uri('../repos'))
     pom.groupId = 'com.xander.xaop'
     pom.artifactId = 'gradle'
     pom.version = "$xaop_version"
   }
+}
+
+task sourcesJar(type: Jar, dependsOn:classes) {
+  classifier = 'sources'
+  from sourceSets.main.allSource
+}
+
+artifacts {
+  archives sourcesJar
 }
 
 dependencies {
