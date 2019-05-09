@@ -4,7 +4,7 @@ import com.android.build.api.transform.TransformException
 import com.android.build.api.transform.TransformInvocation
 import com.xander.aop.transform.XaopConfig
 import com.xander.aop.transform.XaopTransform
-import com.xander.xaop.test.ToolWeaver
+import com.xander.xaop.lib.ToolWeaver
 import org.gradle.api.Project
 
 public class AopToolTransform extends XaopTransform {

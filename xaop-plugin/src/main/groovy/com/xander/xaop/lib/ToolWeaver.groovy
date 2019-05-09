@@ -1,4 +1,4 @@
-package com.xander.xaop.test
+package com.xander.xaop.lib
 
 import com.xander.aop.transform.BaseWeaver
 import com.xander.aop.transform.XaopConfig

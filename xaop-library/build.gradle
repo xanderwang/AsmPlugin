@@ -1,8 +1,28 @@
 apply plugin: 'java-library'
+apply plugin: "maven"
 
-dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+uploadArchives {
+  repositories.mavenDeployer {
+    repository(url: uri('../repos'))
+    pom.groupId = 'com.xander.xaop'
+    pom.artifactId = 'tool'
+    pom.version = "1.0.0"
+  }
 }
 
-sourceCompatibility = "7"
-targetCompatibility = "7"
+task sourcesJar(type: Jar, dependsOn: classes) {
+  classifier = 'sources'
+  from sourceSets.main.allSource
+}
+
+artifacts {
+  archives sourcesJar
+}
+
+
+dependencies {
+  implementation fileTree(dir: 'libs', include: ['*.jar'])
+}
+
+//sourceCompatibility = "7"
+//targetCompatibility = "7"
