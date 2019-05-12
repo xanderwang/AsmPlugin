@@ -1,8 +1,11 @@
 apply plugin: 'com.android.application'
 
 // com.xander.xaop 为 resources/META-INF/gradle-plugins 下的 properties 文件名称
-apply plugin: 'com.xander.xaop'
+apply plugin: 'com.xander.xaop.gradle'
 
+aopConfig {
+  "log" true
+}
 
 android {
   compileSdkVersion 26

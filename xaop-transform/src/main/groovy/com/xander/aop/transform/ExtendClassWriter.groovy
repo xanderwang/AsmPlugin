@@ -4,8 +4,7 @@ import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes
 
-
-public class ExtendClassWriter extends ClassWriter {
+class ExtendClassWriter extends ClassWriter {
 
   public static final String TAG = "ExtendClassWriter"
 
@@ -13,7 +12,7 @@ public class ExtendClassWriter extends ClassWriter {
 
   private ClassLoader urlClassLoader
 
-  public ExtendClassWriter(ClassLoader urlClassLoader, int flags) {
+  ExtendClassWriter(ClassLoader urlClassLoader, int flags) {
     super(flags)
     this.urlClassLoader = urlClassLoader
   }

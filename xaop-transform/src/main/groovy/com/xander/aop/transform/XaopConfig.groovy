@@ -1,7 +1,8 @@
 package com.xander.aop.transform
 
-public class XaopConfig {
+class XaopConfig {
   boolean log = false
+  boolean skipJar = true
   boolean debugSkip = false
   boolean releaseSkip = true
   boolean duplcatedClassSafeMode = false
@@ -10,6 +11,7 @@ public class XaopConfig {
 
   @Override
   String toString() {
-    return "debugSkip:${debugSkip},releaseSkip:${releaseSkip}"
+    return "{log:${log},debugSkip:${debugSkip},releaseSkip:${releaseSkip}},skipJar:${skipJar}," +
+      ",duplcatedClassSafeMode:${duplcatedClassSafeMode},whiteList:${whiteList},blackList:${blackList}}"
   }
 }

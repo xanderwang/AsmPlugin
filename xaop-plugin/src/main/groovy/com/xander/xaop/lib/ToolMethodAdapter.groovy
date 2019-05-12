@@ -1,5 +1,6 @@
 package com.xander.xaop.lib
 
+import groovyjarjarasm.asm.Label
 import org.objectweb.asm.AnnotationVisitor
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
@@ -18,16 +19,14 @@ class ToolMethodAdapter extends LocalVariablesSorter implements Opcodes {
   ToolMethodAdapter(String name, int access, String desc, MethodVisitor mv) {
     super(Opcodes.ASM5, access, desc, mv)
     this.methodName = name
-    if (methodName.contains("xander")) {
-      println methodName
-    }
+//    println "method:$methodName"
   }
 
   @Override
   AnnotationVisitor visitAnnotation(String desc, boolean visible) {
     desc = desc.replaceAll("/", ".")
-    println "visitAnnotation ${desc}"
     if (desc.contains("com.xander.xaop.tool.DebugTime")) {
+      println "visitAnnotation ${desc}"
       debugTime = true
     }
     return super.visitAnnotation(desc, visible)
@@ -55,8 +54,8 @@ class ToolMethodAdapter extends LocalVariablesSorter implements Opcodes {
         mv.visitVarInsn(LSTORE, index)
         mv.visitLdcInsn(methodName)
         mv.visitVarInsn(LLOAD, index)
-        mv.visitMethodInsn(INVOKESTATIC, "com/xander/xaop/demo/MainActivity", "logTime",
-          "(Ljava/lang/String;J)V", false)
+        mv.visitMethodInsn(INVOKESTATIC, "com/xander/xaop/tool/help/L", "d", "(Ljava/lang/String;J)V",
+          false)
       }
     }
     super.visitInsn(opcode)

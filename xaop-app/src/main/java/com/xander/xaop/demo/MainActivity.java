@@ -18,7 +18,8 @@ public class MainActivity extends AppCompatActivity {
     //myLog("onCreate" + msg);
     //long costTime = System.currentTimeMillis() - time;
     //costTime = costTime - time;
-    //logTime("myLog", costTime);
+    //logTime("sssss",123L);
+    //L.d("sss",23L);
   }
 
   public String myLog(String msg) {
@@ -30,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
     myLog("onResume" + msg);
   }
 
-  public static void logTime(String msgName, long time) {
-    Log.d("time", msgName + " cost time:" + time);
+  public static void logTime(String methodName, long time) {
+    Log.d("time", "cost time:" + time);
   }
 }

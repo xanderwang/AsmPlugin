@@ -7,7 +7,7 @@ import com.google.common.io.Files
 import org.apache.commons.io.FileUtils
 import org.gradle.api.Project
 
-public class XaopTransform extends Transform {
+class XaopTransform extends Transform {
 
   private static final Set<QualifiedContent.Scope> SCOPES = new HashSet<>()
 
@@ -25,39 +25,39 @@ public class XaopTransform extends Transform {
   // 多任务
   private WaitableExecutor waitableExecutor
 
-  public XaopTransform(Project project) {
+  XaopTransform(Project project) {
     this.project = project
     this.waitableExecutor = WaitableExecutor.useGlobalSharedThreadPool()
   }
 
   @Override
-  public String getName() {
+  String getName() {
     return this.getClass().getSimpleName()
   }
 
   @Override
-  public Set<QualifiedContent.ContentType> getInputTypes() {
+  Set<QualifiedContent.ContentType> getInputTypes() {
     return TransformManager.CONTENT_CLASS
   }
 
   @Override
-  public Set<QualifiedContent.Scope> getScopes() {
+  Set<QualifiedContent.Scope> getScopes() {
     return SCOPES
   }
 
   @Override
-  public boolean isIncremental() {
+  boolean isIncremental() {
     return true
   }
 
   @Override
-  public boolean isCacheable() {
+  boolean isCacheable() {
     return true
   }
 
   @Override
   void transform(TransformInvocation transformInvocation)
-      throws TransformException, InterruptedException, IOException {
+    throws TransformException, InterruptedException, IOException {
     //super.transform(transformInvocation)
     boolean skip = false
     config = getXaopConfig()
@@ -77,20 +77,21 @@ public class XaopTransform extends Transform {
     Collection<TransformInput> inputs = transformInvocation.inputs
     Collection<TransformInput> referencedInputs = transformInvocation.referencedInputs
     URLClassLoader urlClassLoader = ClassLoaderHelper.getClassLoader(inputs, referencedInputs,
-        project)
+      project)
     this.weaver.setClassLoader(urlClassLoader)
     boolean flagForCleanDexBuilderFolder = false
 
     for (TransformInput input : inputs) {
       for (JarInput jarInput : input.getJarInputs()) {
         File dest = outputProvider.getContentLocation(jarInput.getFile().getAbsolutePath(),
-            jarInput.getContentTypes(),
-            jarInput.getScopes(),
-            Format.JAR)
+          jarInput.getContentTypes(),
+          jarInput.getScopes(),
+          Format.JAR)
         if (config.log) {
           println "jarInput:${jarInput.getFile().getAbsolutePath()},dest:${dest.getAbsolutePath()}"
         }
-        if (skip || true) {
+        if (skip || config.skipJar) {
+          println "skip transform jar:${jarInput.getFile().getAbsolutePath()}"
           FileUtils.copyFile(jarInput.getFile(), dest)
           continue
         }
@@ -121,13 +122,14 @@ public class XaopTransform extends Transform {
 
       for (DirectoryInput directoryInput : input.getDirectoryInputs()) {
         File dest = outputProvider.getContentLocation(directoryInput.getName(),
-            directoryInput.getContentTypes(), directoryInput.getScopes(),
-            Format.DIRECTORY)
+          directoryInput.getContentTypes(), directoryInput.getScopes(),
+          Format.DIRECTORY)
         if (config.log) {
           println "directoryInput:${directoryInput.getFile().getAbsolutePath()},dest:${dest.getAbsolutePath()}"
         }
         FileUtils.forceMkdir(dest)
         if (skip) {
+          println "skip transform dir:${directoryInput.getFile().getAbsolutePath()}"
           FileUtils.copyDirectory(directoryInput.getFile(), dest)
           continue
         }
@@ -163,7 +165,7 @@ public class XaopTransform extends Transform {
           }
         } else {
           transformDir(directoryInput.getFile(), directoryInput.getFile().getAbsolutePath(),
-              dest.getAbsolutePath())
+            dest.getAbsolutePath())
         }
       }
     }
@@ -174,12 +176,10 @@ public class XaopTransform extends Transform {
   }
 
   protected void transformSingleFile(final File inputFile, final File outputFile,
-      final String srcBaseDir) {
+    final String srcBaseDir) {
     if (config.log) {
-      if( config.log ) {
-        println "transformSingleFile inputFile:${inputFile.getAbsolutePath()}"
-        println "transformSingleFile outputFile:${outputFile.getAbsolutePath()}"
-      }
+      println "transformSingleFile inputFile:${inputFile.getAbsolutePath()}"
+      println "transformSingleFile outputFile:${outputFile.getAbsolutePath()}"
     }
     waitableExecutor.execute({
       weaver.weaveSingleClass(inputFile, outputFile, srcBaseDir)
@@ -188,7 +188,7 @@ public class XaopTransform extends Transform {
   }
 
   protected void transformDir(final File sourceDir, final String inputDirPath,
-      final String outputDirPath) throws IOException {
+    final String outputDirPath) throws IOException {
     if (null != sourceDir && sourceDir.isDirectory()) {
       File[] files = sourceDir.listFiles()
       if (null == files || files.length == 0) {
@@ -210,13 +210,13 @@ public class XaopTransform extends Transform {
   }
 
   protected void transformFileList(final ArrayList<File> sourceList, final String inputDirPath,
-      final String outputDirPath) {
+    final String outputDirPath) {
     waitableExecutor.execute({
       for (File sourceFile : sourceList) {
         String sourceFilePath = sourceFile.getAbsolutePath()
         File outputFile = new File(sourceFilePath.replace(inputDirPath, outputDirPath))
-        if( config.log ) {
-          println "transformFileList sourceFile:${sourceFilePath}"
+        if (config.log) {
+          println "transformFileList sourceFile:${sourceFile.getAbsolutePath()}"
           println "transformFileList outputFile:${outputFile.getAbsolutePath()}"
         }
         weaver.weaveSingleClass(sourceFile, outputFile, inputDirPath)
@@ -225,7 +225,7 @@ public class XaopTransform extends Transform {
   }
 
   protected void transformJar(final File srcJar, final File destJar) {
-    if( config.log ) {
+    if (config.log) {
       println "transformJar srcJar:${srcJar.getAbsolutePath()}"
       println "transformJar destJar:${destJar.getAbsolutePath()}"
     }

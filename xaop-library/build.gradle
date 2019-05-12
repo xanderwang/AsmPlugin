@@ -22,7 +22,8 @@ artifacts {
 
 dependencies {
   implementation fileTree(dir: 'libs', include: ['*.jar'])
+//  provider ""
 }
 
-//sourceCompatibility = "7"
-//targetCompatibility = "7"
+sourceCompatibility = "7"
+targetCompatibility = "7"

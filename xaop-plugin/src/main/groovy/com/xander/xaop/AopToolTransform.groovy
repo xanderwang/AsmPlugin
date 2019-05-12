@@ -7,13 +7,16 @@ import com.xander.aop.transform.XaopTransform
 import com.xander.xaop.lib.ToolWeaver
 import org.gradle.api.Project
 
-public class AopToolTransform extends XaopTransform {
+class AopToolTransform extends XaopTransform {
+
+  public static String CONFIG = "aopConfig"
+
   private Project project
 
-  public AopToolTransform(Project project) {
+  AopToolTransform(Project project) {
     super(project)
     this.project = project
-    project.getExtensions().create("aopConfig", XaopConfig.class)
+    project.getExtensions().create(CONFIG, XaopConfig.class)
     this.weaver = new ToolWeaver()
   }
 
@@ -30,7 +33,8 @@ public class AopToolTransform extends XaopTransform {
 
   @Override
   protected XaopConfig getXaopConfig() {
-    return (XaopConfig) project.getExtensions().getByName("aopConfig")
+    XaopConfig config =  (XaopConfig) project.getExtensions().getByName(CONFIG)
+    return config
   }
 
   @Override 

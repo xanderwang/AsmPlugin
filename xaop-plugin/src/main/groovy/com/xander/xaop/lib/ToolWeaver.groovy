@@ -5,12 +5,12 @@ import com.xander.aop.transform.XaopConfig
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter
 
-public class ToolWeaver extends BaseWeaver {
+class ToolWeaver extends BaseWeaver {
 
   private XaopConfig config = new XaopConfig()
 
   @Override
-  public void setExtension(Object extension) {
+  void setExtension(Object extension) {
     if (extension == null) {
       return
     }
@@ -18,19 +18,20 @@ public class ToolWeaver extends BaseWeaver {
   }
 
   @Override
-  public boolean isWeavableClass(String fullQualifiedClassName) {
-    if (config.log) {
-      println "isWeavableClass:${fullQualifiedClassName}"
-    }
+  boolean isWeavableClass(String fullQualifiedClassName) {
+//    if (config.log && fullQualifiedClassName.concat("xander") ) {
+//      println "======find class:${fullQualifiedClassName}"
+//    }
     boolean superResult = super.isWeavableClass(fullQualifiedClassName)
     if (config != null && superResult && !config.whiteList.isEmpty()) {
       // whitelist is prior to to blacklist
       // 如果配置了白名单，那么就只修改白名单里面的类
       for (String item : config.whiteList) {
         if (fullQualifiedClassName.startsWith(item)) {
-          return false
+          return true
         }
       }
+      return false
     }
     if (config != null && superResult && !config.blackList.isEmpty()) {
       for (String item : config.blackList) {
@@ -38,6 +39,7 @@ public class ToolWeaver extends BaseWeaver {
           return false
         }
       }
+      return true
     }
     return superResult
   }

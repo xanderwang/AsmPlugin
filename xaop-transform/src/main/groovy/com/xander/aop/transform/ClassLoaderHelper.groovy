@@ -8,9 +8,9 @@ import com.google.common.collect.ImmutableList
 import com.google.common.collect.Iterables
 import org.gradle.api.Project
 
-public class ClassLoaderHelper {
+class ClassLoaderHelper {
 
-  public static URLClassLoader getClassLoader(Collection<TransformInput> inputs,
+  static URLClassLoader getClassLoader(Collection<TransformInput> inputs,
       Collection<TransformInput> referencedInputs, Project project) throws MalformedURLException {
     ImmutableList.Builder<URL> urls = new ImmutableList.Builder<URL>()
     String androidJarPath = getAndroidJarPath(project)

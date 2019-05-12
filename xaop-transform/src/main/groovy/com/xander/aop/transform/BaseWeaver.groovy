@@ -13,17 +13,17 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
 
-public class BaseWeaver implements IWeaver {
+abstract class BaseWeaver implements IWeaver {
 
   private static final FileTime ZERO = FileTime.fromMillis(0)
   protected ClassLoader classLoader
 
-  public BaseWeaver() {}
+  BaseWeaver() {}
 
-  public final void weaveJar(File inputJar, File outputJar) throws IOException {
+  final void weaveJar(File inputJar, File outputJar) throws IOException {
     ZipFile inputZip = new ZipFile(inputJar)
     ZipOutputStream outputZip = new ZipOutputStream(
-        new BufferedOutputStream(Files.newOutputStream(outputJar.toPath())))
+      new BufferedOutputStream(Files.newOutputStream(outputJar.toPath())))
     Enumeration<? extends ZipEntry> inEntries = inputZip.entries()
     while (inEntries.hasMoreElements()) {
       ZipEntry entry = inEntries.nextElement()
@@ -52,10 +52,12 @@ public class BaseWeaver implements IWeaver {
     outputZip.close()
   }
 
-  public final void weaveSingleClass(File inputFile, File outputFile, String inputBaseDir)
-      throws IOException {
+  final void weaveSingleClass(File inputFile, File outputFile, String inputBaseDir)
+    throws IOException {
     if (!inputBaseDir.endsWith("/")) inputBaseDir = inputBaseDir + "/"
-    if (isWeavableClass(inputFile.getAbsolutePath().replace(inputBaseDir, "").replace("/", "."))) {
+    String className = inputFile.getAbsolutePath().replace(inputBaseDir, "").replace("/", ".")
+//    println "calss name:${className}"
+    if (isWeavableClass(className)) {
       FileUtils.touch(outputFile)
       InputStream inputStream = new FileInputStream(inputFile)
       byte[] bytes = weaveSingleClassToByteArray(inputStream)
@@ -71,14 +73,14 @@ public class BaseWeaver implements IWeaver {
     }
   }
 
-  public void setExtension(Object extension) {}
+  abstract void setExtension(Object extension)
 
-  public final void setClassLoader(ClassLoader classLoader) {
+  final void setClassLoader(ClassLoader classLoader) {
     this.classLoader = classLoader
   }
 
   @Override
-  public byte[] weaveSingleClassToByteArray(InputStream inputStream) throws IOException {
+  byte[] weaveSingleClassToByteArray(InputStream inputStream) throws IOException {
     ClassReader classReader = new ClassReader(inputStream)
     ClassWriter classWriter = new ExtendClassWriter(classLoader, ClassWriter.COMPUTE_MAXS)
     ClassVisitor classWriterWrapper = wrapClassWriter(classWriter)
@@ -91,9 +93,9 @@ public class BaseWeaver implements IWeaver {
   }
 
   @Override
-  public boolean isWeavableClass(String fullQualifiedClassName) {
+  boolean isWeavableClass(String fullQualifiedClassName) {
     return fullQualifiedClassName.endsWith(".class") && !fullQualifiedClassName.contains("R\$") &&
-        !fullQualifiedClassName.contains("R.class") &&
-        !fullQualifiedClassName.contains("BuildConfig.class")
+      !fullQualifiedClassName.contains("R.class") &&
+      !fullQualifiedClassName.contains("BuildConfig.class")
   }
 }
