@@ -1,13 +1,17 @@
+import groovy.json.JsonBuilder
+
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
+
+  rootProject.ext.isPluginExists = project.file('./repos/com/xander/xaop/gradle').exists()
 
   repositories {
     maven { url uri("./repos") }
     maven { url "https://maven.aliyun.com/repository/jcenter" }
     maven { url "https://maven.aliyun.com/repository/google" }
-    //    google()
-    //    jcenter()
+    google()
+    jcenter()
   }
 
   dependencies {
@@ -15,20 +19,76 @@ buildscript {
 
     // NOTE: Do not place your application dependencies here; they belong
     // in the individual module build.gradle files
-
-    //格式为 --> group:module:version
-    classpath 'com.xander.xaop:gradle:1.0.0'
+    println "rootProject.ext:${new JsonBuilder(rootProject.ext).toString()}"
+    if (rootProject.ext.isPluginExists) {
+      //格式为 --> group:module:version
+      classpath "com.xander.xaop:gradle:1.0.0"
+    }
   }
 }
 
+task initRepo(type: Exec) {
+  executable = './gradlew'
+  workingDir = './'
+  args = [':xaop-library:clean',
+          ':xaop-library:upload',
+          ':xaop-transform:clean',
+          ':xaop-transform:upload',
+          ':xaop-plugin:clean',
+          ':xaop-plugin:upload',
+          '--info']
+}
+
+task initXaopLibrary(type: Exec) {
+  executable = '../gradlew'
+  workingDir = project.file('xaop-library')
+  args = ['clean', 'upload', '--info']
+}
+
+task initXaopTransform(type: Exec) {
+  executable = '../gradlew'
+  workingDir = project.file('xaop-transform')
+  args = ['clean', 'upload', '--info']
+}
+
+task initXaopPlugin(type: Exec) {
+  executable = '../gradlew'
+  workingDir = project.file('xaop-plugin')
+  args = ['clean', 'upload', '--info']
+}
+
 allprojects {
+  ext.remote = true
+  ext.isPluginExists = project.file('./repos/com/xander/xaop/gradle').exists()
   repositories {
     maven { url uri('../repos') }
     maven { url "https://maven.aliyun.com/repository/jcenter" }
     maven { url "https://maven.aliyun.com/repository/google" }
-    //    google()
-    //    jcenter()
+    google()
+    jcenter()
   }
+
+//  configurations {
+//    all {
+//      resolutionStrategy {
+//        eachDependency { dependency ->
+//          // 如果有需要修改为统一的库版本可以在这里修改
+//          // println new JsonBuilder( dependency ).toPrettyString()
+//          if (dependency.requested.group == 'xx.xx.xx' && dependency.requested.name == 'xxxx') {
+//            dependency.requested.version = 'xx.xx.xx'
+//          }
+//        }
+//
+//        dependencySubstitution {
+//          println "useRemote:${remote}"
+//          if (!remote) {
+//            substitute module("com.xander.xaop:transform:1.0.0") with project("::xaop-transform")
+//            substitute module("com.xander.xaop:gradle:1.0.0") with project("::xaop-plugin")
+//          }
+//        }
+//      }
+//    }
+//  }
 }
 
 task clean(type: Delete) {

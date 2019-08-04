@@ -1,10 +1,14 @@
 apply plugin: 'com.android.application'
 
+//def isPluginExists = project.file('../repos/com/xander/xaop/gradle').exists()
+if (rootProject.ext.isPluginExists) {
+  println "in xaop-app, start apply plugin"
 // com.xander.xaop 为 resources/META-INF/gradle-plugins 下的 properties 文件名称
-apply plugin: 'com.xander.xaop.gradle'
+  apply plugin: 'com.xander.xaop.gradle'
 
-aopConfig {
-  "log" true
+  aopConfig {
+    "log" true
+  }
 }
 
 android {
@@ -34,9 +38,7 @@ dependencies {
   androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
   implementation 'com.xander.xaop:tool:1.0.0'
-
 }
-
 
 //task cleanAndroidMock(type: Delete) {
 //    description = 'Deletes the mockable Android jar'
