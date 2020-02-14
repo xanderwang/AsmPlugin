@@ -1,0 +1,16 @@
+name: GitHub Actions Build and Deploy Demo
+on:
+  push:
+    branches:
+      - master
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Build and Deploy
+      env:
+        MY_VAR: i.
+        FIRST_NAME: Wang
+        MIDDLE_NAME: Xander
+      run: |
+        echo $MY_VAR $FIRST_NAME $MIDDLE_NAME . 
