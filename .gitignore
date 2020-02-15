@@ -10,4 +10,8 @@
 /captures
 .externalNativeBuild
 /.idea/
-/repos/
+/repos
+.project
+.classpath
+.settings
+*/bin
