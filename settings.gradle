@@ -2,6 +2,6 @@
 //include ':apt_process'
 include ':xaop-library'
 include ':xaop-transform'
-
+include ':plugin-library'
 include ':xaop-plugin'
 include ':xaop-app'
