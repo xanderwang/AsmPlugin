@@ -18,8 +18,7 @@ class ExtendClassWriter extends ClassWriter {
   }
 
   /**
-   * https://github.com/Moniter123/pinpoint/blob/40106ffe6cc4d6aea9d59b4fb7324bcc009483ee/profiler/src/main/java/com/navercorp/pinpoint/profiler/instrument/ASMClassWriter.java
-   */
+   * https://github.com/Moniter123/pinpoint/blob/40106ffe6cc4d6aea9d59b4fb7324bcc009483ee/profiler/src/main/java/com/navercorp/pinpoint/profiler/instrument/ASMClassWriter.java*/
   @Override
   protected String getCommonSuperClass(final String type1, final String type2) {
     if (type1 == null || type1 == OBJECT || type2 == null || type2 == OBJECT) {
@@ -130,7 +129,6 @@ class ExtendClassWriter extends ClassWriter {
   private boolean isInterface(final ClassReader classReader) {
     return (classReader.getAccess() & Opcodes.ACC_INTERFACE) != 0
   }
-
 
   private String getSuperClassName(final String className) {
     final ClassReader classReader = getClassReader(className)

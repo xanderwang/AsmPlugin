@@ -8,9 +8,7 @@ class BaseClassAdapter extends ClassVisitor {
 
   protected String className
 
-  boolean log
-
-  IWeaver iWeaver
+  IWeaverFactory iWeaver
 
   PluginConfig pluginConfig
 
@@ -20,15 +18,15 @@ class BaseClassAdapter extends ClassVisitor {
 
   @Override
   void visit(int version, int access, String name, String signature, String superName,
-             String[] interfaces) {
+    String[] interfaces) {
     this.className = name.replaceAll("/", ".")
-    if (log) println "BaseClassAdapter visit class:$className"
+    if (pluginConfig.log) println "BaseClassAdapter visit class:$className"
     super.visit(version, access, name, signature, superName, interfaces)
   }
 
   @Override
   MethodVisitor visitMethod(final int access, final String name, final String desc,
-                            final String signature, final String[] exceptions) {
+    final String signature, final String[] exceptions) {
     MethodVisitor mv = cv.visitMethod(access, name, desc, signature, exceptions)
     return mv == null ? null : createMethodAdapter(className + '.' + name, access, desc, mv)
   }

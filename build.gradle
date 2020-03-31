@@ -1,10 +1,13 @@
+//apply from: './config.gradle'
+
 import groovy.json.JsonBuilder
 
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
 
-  rootProject.ext.isPluginExists = project.file('./repos/com/xander/xaop/gradle').exists()
+  def usePlugin = true
+  rootProject.ext.isLocalMode = project.file('./repos/com/xander/xaop/plugin').exists() && usePlugin
 
   repositories {
     maven { url uri("./repos") }
@@ -19,47 +22,59 @@ buildscript {
 
     // NOTE: Do not place your application dependencies here; they belong
     // in the individual module build.gradle files
-    println "rootProject.ext:${new JsonBuilder(rootProject.ext).toString()}"
-    if (rootProject.ext.isPluginExists) {
+    if (rootProject.ext.isLocalMode) {
       //格式为 --> group:module:version
-      classpath "com.xander.xaop:gradle:1.0.0"
+      classpath "com.xander.xaop:plugin:1.0.0"
     }
   }
 }
 
-task initRepo(type: Exec) {
-  executable = './gradlew'
-  workingDir = './'
-  args = [':xaop-library:clean',
-          ':xaop-library:upload',
-          ':xaop-transform:clean',
-          ':xaop-transform:upload',
-          ':xaop-plugin:clean',
-          ':xaop-plugin:upload',
-          '--info']
+def isWindows() {
+  def os_name = System.properties['os.name'].toString().toLowerCase()
+  println "os name: ${os_name}"
+  return os_name.contains('window')
 }
 
-task initXaopLibrary(type: Exec) {
-  executable = '../gradlew'
-  workingDir = project.file('xaop-library')
-  args = ['clean', 'upload', '--info']
+def defCmd() {
+  if (isWindows()) return 'gradlew.bat'
+  return './gradlew'
 }
 
-task initXaopTransform(type: Exec) {
-  executable = '../gradlew'
-  workingDir = project.file('xaop-transform')
-  args = ['clean', 'upload', '--info']
-}
-
-task initXaopPlugin(type: Exec) {
-  executable = '../gradlew'
-  workingDir = project.file('xaop-plugin')
-  args = ['clean', 'upload', '--info']
-}
+//task initRepo(type: Exec) {
+//  args = [
+//    defCmd(),
+//    ':xaop-library:clean',
+//    ':xaop-library:upload',
+//    ':xaop-transform:clean',
+//    ':xaop-transform:upload',
+//    ':xaop-plugin:clean',
+//    ':xaop-plugin:upload',
+//    '--info'
+//  ]
+//  commandLine args
+//}
+//
+//task initPluginLibrary(type: Exec) {
+//  args = [defCmd(), ':plugin-library:clean', ':plugin-library:upload', '--info']
+//  commandLine args
+//}
+//
+//task initXaopLibrary(type: Exec) {
+//  args = [defCmd(), ':xaop-library:clean', ':xaop-library:upload', '--info']
+//  commandLine args
+//}
+//
+//task initXaopTransform(type: Exec) {
+//  args = [defCmd(), ':xaop-transform:clean', ':xaop-transform:upload', '--info']
+//  commandLine args
+//}
+//
+//task initXaopPlugin(type: Exec) {
+//  args = [defCmd(), ':xaop-plugin:clean', ':xaop-plugin:upload', '--info']
+//  commandLine args
+//}
 
 allprojects {
-  ext.remote = true
-  ext.isPluginExists = project.file('./repos/com/xander/xaop/gradle').exists()
   repositories {
     maven { url uri('../repos') }
     maven { url "https://maven.aliyun.com/repository/jcenter" }

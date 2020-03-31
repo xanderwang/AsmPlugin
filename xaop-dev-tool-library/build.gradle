@@ -5,7 +5,7 @@ uploadArchives {
   repositories.mavenDeployer {
     repository(url: uri('../repos'))
     pom.groupId = 'com.xander.xaop'
-    pom.artifactId = 'tool'
+    pom.artifactId = 'devtool'
     pom.version = "1.0.0"
   }
 }

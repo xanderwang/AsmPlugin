@@ -1,10 +1,11 @@
 apply plugin: 'com.android.application'
 
-//def isPluginExists = project.file('../repos/com/xander/xaop/gradle').exists()
-if (rootProject.ext.isPluginExists) {
+def isPluginExists = project.file('../repos/com/xander/xaop/gradle').exists()
+if (rootProject.ext.isLocalMode) {
+
   println "in xaop-app, start apply plugin"
-// com.xander.xaop 为 resources/META-INF/gradle-plugins 下的 properties 文件名称
-  apply plugin: 'com.xander.xaop.gradle'
+  // com.xander.xaop 为 resources/META-INF/gradle-plugins 下的 properties 文件名称
+  apply plugin: 'com.xander.xaop.plugin'
 
   aopConfig {
     "log" true

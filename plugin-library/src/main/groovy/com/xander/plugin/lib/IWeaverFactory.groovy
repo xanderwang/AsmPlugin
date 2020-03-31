@@ -5,7 +5,7 @@ import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.commons.LocalVariablesSorter
 
-interface IWeaver {
+interface IWeaverFactory {
 
   /**
    * Check a certain file is wearable*/

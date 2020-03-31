@@ -5,7 +5,7 @@ import com.android.build.gradle.internal.pipeline.TransformManager
 import com.android.ide.common.internal.WaitableExecutor
 import com.google.common.io.Files
 import com.xander.plugin.lib.PluginConfig
-import com.xander.plugin.lib.BaseWeaver
+import com.xander.plugin.lib.BaseWeaverFactory
 import com.xander.plugin.lib.URLClassLoaderHelper
 import org.apache.commons.io.FileUtils
 import org.gradle.api.Project
@@ -25,12 +25,14 @@ abstract class BaseTransform extends Transform {
   protected PluginConfig pluginConfig = new PluginConfig()
 
   // 用来编辑字节码
-  protected BaseWeaver weaver
+  protected BaseWeaverFactory weaver
   // 多任务
+//  private WaitableExecutor waitableExecutor
   private WaitableExecutor waitableExecutor
 
   BaseTransform(Project project) {
     this.project = project
+//    this.waitableExecutor = WaitableExecutor.useGlobalSharedThreadPool()
     this.waitableExecutor = WaitableExecutor.useGlobalSharedThreadPool()
     weaver = createWeaver()
   }
@@ -60,14 +62,16 @@ abstract class BaseTransform extends Transform {
     return true
   }
 
-  abstract BaseWeaver createWeaver()
+  abstract BaseWeaverFactory createWeaver()
+
+  abstract PluginConfig createPluginConfig()
 
   @Override
   void transform(TransformInvocation transformInvocation)
-      throws TransformException, InterruptedException, IOException {
+    throws TransformException, InterruptedException, IOException {
     //super.transform(transformInvocation)
     boolean skip = false
-    pluginConfig = config
+    pluginConfig = createPluginConfig()
     println "${name} config:${pluginConfig}"
     weaver.pluginConfig = pluginConfig
     String variantName = transformInvocation.context.variantName
@@ -78,26 +82,23 @@ abstract class BaseTransform extends Transform {
     }
     println "${name} variant:${variantName},skip:${skip}"
     long startTime = System.currentTimeMillis()
+    TransformOutputProvider outputProvider = transformInvocation.getOutputProvider()
     if (!transformInvocation.incremental) {
       outputProvider.deleteAll()
     }
-    TransformOutputProvider outputProvider = transformInvocation.getOutputProvider()
     Collection<TransformInput> inputs = transformInvocation.inputs
     Collection<TransformInput> referencedInputs = transformInvocation.referencedInputs
-    URLClassLoader urlClassLoader = URLClassLoaderHelper.getClassLoader(
-        inputs, referencedInputs, project
-    )
+    URLClassLoader urlClassLoader = URLClassLoaderHelper.
+      getClassLoader(inputs, referencedInputs, project)
     this.weaver.setClassLoader(urlClassLoader)
     boolean flagForCleanDexBuilderFolder = false
 
     for (TransformInput input : inputs) {
       for (JarInput jarInput : input.jarInputs) {
-        File dest = outputProvider.getContentLocation(
-            jarInput.file.absolutePath,
-            jarInput.contentTypes,
-            jarInput.scopes,
-            Format.JAR
-        )
+        File dest = outputProvider.getContentLocation(jarInput.file.absolutePath,
+          jarInput.contentTypes,
+          jarInput.scopes,
+          Format.JAR)
         if (pluginConfig.log) {
           println "${name} jarInput:${jarInput.file.absolutePath},dest:${dest.absolutePath}"
         }
@@ -132,12 +133,10 @@ abstract class BaseTransform extends Transform {
       }
 
       for (DirectoryInput directoryInput : input.directoryInputs) {
-        File dest = outputProvider.getContentLocation(
-            directoryInput.name,
-            directoryInput.contentTypes,
-            directoryInput.scopes,
-            Format.DIRECTORY
-        )
+        File dest = outputProvider.getContentLocation(directoryInput.name,
+          directoryInput.contentTypes,
+          directoryInput.scopes,
+          Format.DIRECTORY)
         if (pluginConfig.log) {
           println "${name} directoryInput:${directoryInput.file.absolutePath},dest:${dest.absolutePath}"
         }
@@ -189,7 +188,7 @@ abstract class BaseTransform extends Transform {
   }
 
   protected void transformSingleFile(final File inputFile, final File outputFile,
-                                     final String srcBaseDir) {
+    final String srcBaseDir) {
     if (pluginConfig.log) {
       println "transformSingleFile inputFile:${inputFile.absolutePath}"
       println "transformSingleFile outputFile:${outputFile.absolutePath}"
@@ -201,7 +200,7 @@ abstract class BaseTransform extends Transform {
   }
 
   protected void transformDir(final File sourceDir, final String inputDirPath,
-                              final String outputDirPath) throws IOException {
+    final String outputDirPath) throws IOException {
     if (null != sourceDir && sourceDir.isDirectory()) {
       File[] files = sourceDir.listFiles()
       if (null == files || files.length == 0) {
@@ -223,7 +222,7 @@ abstract class BaseTransform extends Transform {
   }
 
   protected void transformFileList(final ArrayList<File> sourceList, final String inputDirPath,
-                                   final String outputDirPath) {
+    final String outputDirPath) {
     waitableExecutor.execute({
       for (File sourceFile : sourceList) {
         String sourceFilePath = sourceFile.getAbsolutePath()
@@ -275,9 +274,9 @@ abstract class BaseTransform extends Transform {
     return builder.toString()
   }
 
-  protected PluginConfig getConfig() {
-    return pluginConfig
-  }
+//  protected PluginConfig getPluginConfig() {
+//    return pluginConfig
+//  }
 
   protected boolean inDuplcatedClassSafeMode() {
     return false

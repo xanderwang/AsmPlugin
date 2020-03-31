@@ -1,6 +1,5 @@
 package com.xander.plugin.lib
 
-
 import org.objectweb.asm.AnnotationVisitor
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
@@ -15,22 +14,22 @@ class BaseMethodAdapter extends LocalVariablesSorter implements Opcodes {
 
   PluginConfig pluginConfig
 
-  boolean log
-
   protected boolean debugTime = false
   protected boolean debugLine = false
 
   BaseMethodAdapter(String name, int access, String desc, MethodVisitor mv) {
     super(Opcodes.ASM5, access, desc, mv)
     this.methodName = name
-//    println "method:$methodName"
+    if (pluginConfig.log) {
+      println "method:$methodName"
+    }
   }
 
   @Override
   AnnotationVisitor visitAnnotation(String desc, boolean visible) {
     desc = desc.replaceAll("/", ".")
     if (desc.contains("com.xander.xaop.tool.DebugTime")) {
-      if (log) println "BaseMethodAdapter visitAnnotation ${desc}"
+      if (pluginConfig.log) println "BaseMethodAdapter visitAnnotation ${desc}"
       debugTime = true
     }
     return super.visitAnnotation(desc, visible)
@@ -42,7 +41,7 @@ class BaseMethodAdapter extends LocalVariablesSorter implements Opcodes {
     if (debugTime) {
       startVarIndex = newLocal(Type.LONG_TYPE)
       mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/System", "currentTimeMillis", "()J",
-          false)
+        false)
       mv.visitVarInsn(Opcodes.LSTORE, startVarIndex)
     }
   }
@@ -58,7 +57,9 @@ class BaseMethodAdapter extends LocalVariablesSorter implements Opcodes {
         mv.visitVarInsn(LSTORE, index)
         mv.visitLdcInsn(methodName)
         mv.visitVarInsn(LLOAD, index)
-        mv.visitMethodInsn(INVOKESTATIC, "com/xander/xaop/tool/help/L", "d", "(Ljava/lang/String;J)V",
+        mv.
+          visitMethodInsn(INVOKESTATIC, "com/xander/xaop/tool/help/L", "d",
+            "(Ljava/lang/String;J)V",
             false)
       }
     }

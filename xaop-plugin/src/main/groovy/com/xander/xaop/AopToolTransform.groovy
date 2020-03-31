@@ -2,12 +2,12 @@ package com.xander.xaop
 
 import com.android.build.api.transform.TransformException
 import com.android.build.api.transform.TransformInvocation
-import com.xander.aop.transform.XaopConfig
-import com.xander.aop.transform.XaopTransform
-import com.xander.xaop.lib.ToolWeaver
+import com.xander.plugin.BaseTransform
+import com.xander.plugin.lib.BaseWeaverFactory
+import com.xander.plugin.lib.PluginConfig
 import org.gradle.api.Project
 
-class AopToolTransform extends XaopTransform {
+class AopToolTransform extends BaseTransform {
 
   public static String CONFIG = "aopConfig"
 
@@ -16,14 +16,23 @@ class AopToolTransform extends XaopTransform {
   AopToolTransform(Project project) {
     super(project)
     this.project = project
-    project.getExtensions().create(CONFIG, XaopConfig.class)
-    this.weaver = new ToolWeaver()
+//    project.getExtensions().create(CONFIG, AopConfig.class)
+    project.getExtensions().create(CONFIG, PluginConfig.class)
+  }
+
+  @Override
+  BaseWeaverFactory createWeaver() {
+    return new BaseWeaverFactory()
+  }
+
+  @Override
+  PluginConfig createPluginConfig() {
+    return project.getExtensions().getByName(CONFIG)
   }
 
   @Override
   void transform(TransformInvocation transformInvocation)
       throws TransformException, InterruptedException, IOException {
-    weaver.setExtension(getXaopConfig())
     try {
       super.transform(transformInvocation)
     } catch(Exception e) {
@@ -31,14 +40,8 @@ class AopToolTransform extends XaopTransform {
     }
   }
 
-  @Override
-  protected XaopConfig getXaopConfig() {
-    XaopConfig config =  (XaopConfig) project.getExtensions().getByName(CONFIG)
-    return config
-  }
-
   @Override 
   protected boolean inDuplcatedClassSafeMode() {
-    return getXaopConfig().duplcatedClassSafeMode
+    return super.inDuplcatedClassSafeMode()
   }
 }

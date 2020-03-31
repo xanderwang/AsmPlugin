@@ -1,3 +1,3 @@
 ext {
-  println 'init config ext'
+  isLocalMode = project.file('./repos/com/xander/xaop/gradle').exists()
 }

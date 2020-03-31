@@ -15,7 +15,7 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
 
-class BaseWeaver implements IWeaver {
+class BaseWeaverFactory implements IWeaverFactory {
 
   private static final FileTime ZERO = FileTime.fromMillis(0)
 
@@ -23,12 +23,12 @@ class BaseWeaver implements IWeaver {
 
   PluginConfig pluginConfig
 
-  BaseWeaver() {}
+  BaseWeaverFactory() {}
 
   final void weaveJar(File inputJar, File outputJar) throws IOException {
     ZipFile inputZip = new ZipFile(inputJar)
     ZipOutputStream outputZip = new ZipOutputStream(
-        new BufferedOutputStream(Files.newOutputStream(outputJar.toPath())))
+      new BufferedOutputStream(Files.newOutputStream(outputJar.toPath())))
     Enumeration<? extends ZipEntry> inEntries = inputZip.entries()
     while (inEntries.hasMoreElements()) {
       ZipEntry entry = inEntries.nextElement()
@@ -58,10 +58,12 @@ class BaseWeaver implements IWeaver {
   }
 
   final void weaveSingleClass(File inputFile, File outputFile, String inputBaseDir)
-      throws IOException {
+    throws IOException {
     if (!inputBaseDir.endsWith("/")) inputBaseDir = inputBaseDir + "/"
     String className = inputFile.getAbsolutePath().replace(inputBaseDir, "").replace("/", ".")
-//    println "calss name:${className}"
+    if (pluginConfig.log) {
+      println "calss name:${className}"
+    }
     if (isWearableClass(className)) {
       FileUtils.touch(outputFile)
       InputStream inputStream = new FileInputStream(inputFile)
@@ -98,8 +100,8 @@ class BaseWeaver implements IWeaver {
   @Override
   boolean isWearableClass(String fullQualifiedClassName) {
     return fullQualifiedClassName.endsWith(".class") && !fullQualifiedClassName.contains("R\$") &&
-        !fullQualifiedClassName.contains("R.class") &&
-        !fullQualifiedClassName.contains("BuildConfig.class")
+      !fullQualifiedClassName.contains("R.class") &&
+      !fullQualifiedClassName.contains("BuildConfig.class")
   }
 
   @Override

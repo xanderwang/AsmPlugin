@@ -8,7 +8,7 @@ uploadArchives {
   repositories.mavenDeployer {
     repository(url: uri('../repos'))
     pom.groupId = 'com.xander.xaop'
-    pom.artifactId = 'gradle'
+    pom.artifactId = 'plugin'
     pom.version = "$xaop_version"
   }
 }
@@ -26,20 +26,14 @@ dependencies {
   implementation gradleApi() //gradle sdk
   implementation localGroovy() //groovy sdk
 
-  implementation 'com.android.tools.build:gradle:3.2.1'
-  implementation 'com.android.tools.build:gradle-api:3.2.1'
-  implementation 'commons-io:commons-io:2.6'
-  implementation 'commons-codec:commons-codec:1.10'
-  //noinspection GradleDependency
-  implementation 'org.ow2.asm:asm:5.1'
-  //noinspection GradleDependency
-  implementation 'org.ow2.asm:asm-util:5.1'
-  //noinspection GradleDependency
-  implementation 'org.ow2.asm:asm-commons:5.1'
-  implementation 'com.xander.xaop:tool:1.0.0'
-  implementation 'com.xander.xaop:transform:1.0.0'
+  implementation 'com.android.tools.build:gradle:3.6.1'
+  implementation 'com.android.tools.build:gradle-api:3.6.1'
 
-//  api project(path: ':xaop-library')
+  implementation 'com.xander.plugin:pluginlibrary:1.0.0'
+//  implementation project(path: ':plugin-library')
+
+//  implementation 'com.xander.xaop:tool:1.0.0'
+//  implementation 'com.xander.xaop:transform:1.0.0'
 //  api project(':xaop-transform')
 
 }

@@ -64,7 +64,7 @@ class NoopTransform extends Transform {
 
   @Override
   void transform(TransformInvocation transformInvocation)
-      throws TransformException, InterruptedException, IOException {
+    throws TransformException, InterruptedException, IOException {
     super.transform(transformInvocation)
     println("transform:----------------------------------------:start ${getName()}")
     // 这里是关键代码，就是如何处理字节码的，处理自己码我们需要 asm 工具
@@ -85,19 +85,20 @@ class NoopTransform extends Transform {
     for (TransformInput input : inputs) {
       for (JarInput jarInput : input.getJarInputs()) {
         File dest = outputProvider.getContentLocation(jarInput.getFile().getAbsolutePath(),
-            jarInput.getContentTypes(),
-            jarInput.getScopes(),
-            Format.JAR)
+          jarInput.getContentTypes(),
+          jarInput.getScopes(),
+          Format.JAR)
         println("transform jar:${jarInput.file.getAbsolutePath()} dest:${dest.getAbsolutePath()}")
         // 将修改过的字节码copy到dest，就可以实现编译期间干预字节码的目的了
         FileUtils.copyFile(jarInput.getFile(), dest);
       }
       for (DirectoryInput directoryInput : input.getDirectoryInputs()) {
         File dest = outputProvider.getContentLocation(directoryInput.getName(),
-            directoryInput.getContentTypes(),
-            directoryInput.getScopes(),
-            Format.DIRECTORY)
-        println("transform directory:${directoryInput.file.getAbsolutePath()} dest:${dest.getAbsolutePath()}")
+          directoryInput.getContentTypes(),
+          directoryInput.getScopes(),
+          Format.DIRECTORY)
+        println(
+          "transform directory:${directoryInput.file.getAbsolutePath()} dest:${dest.getAbsolutePath()}")
         //将修改过的字节码copy到dest，就可以实现编译期间干预字节码的目的了
         FileUtils.copyDirectory(directoryInput.getFile(), dest)
       }
