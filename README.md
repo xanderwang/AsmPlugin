@@ -1,24 +1,4 @@
 
-## Mac os
+这是一个基于 ASM 开发的一款 gradle plugin。 可以用于在打包成 apk 的时候，动态编辑源码，
 
-> ./gradlew  :xaop-library:clean :xaop-library:upload
-
-> ./gradlew  :xaop-library:clean :xaop-library:upload :xaop-transform:clean :xaop-transform:upload
-
-> ./gradlew  :xaop-library:clean :xaop-library:upload :xaop-transform:clean :xaop-transform:upload :xaop-plugin:clean :xaop-plugin:upload  --info
-
-> ./gradlew  :xaop-plugin:clean :xaop-plugin:upload  --info
-
-> ./gradlew  :xaop-app:clean :xaop-app:assembledebug --info
-
-## Windows
-
-> gradlew.bat :xaop-library:clean :xaop-library:upload
-
-> gradlew.bat :xaop-library:clean :xaop-library:upload :xaop-transform:clean :xaop-transform:upload
-
-> gradlew.bat :xaop-library:clean :xaop-library:upload :xaop-transform:clean :xaop-transform:upload :xaop-plugin:clean :xaop-plugin:upload  --info
-
-> gradlew.bat :xaop-plugin:clean :xaop-plugin:upload  --info
-
-> gradlew.bat :xaop-app:clean :xaop-app:assembledebug --info
+比如解析注解，然后统一加上方法耗时的打印。保留行号等。
