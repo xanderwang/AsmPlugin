@@ -1,0 +1,33 @@
+apply plugin: 'groovy'
+apply plugin: 'maven'
+
+def _version = "1.0.0"
+
+uploadArchives {
+  repositories.mavenDeployer {
+    repository(url: uri('../repos'))
+    pom.groupId = 'com.xander.plugin'
+    pom.artifactId = 'asm'
+    pom.version = "$_version"
+  }
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+  archiveClassifier = 'sources'
+  from sourceSets.main.allSource
+}
+
+artifacts {
+  archives sourcesJar
+}
+
+dependencies {
+  implementation gradleApi() //gradle sdk
+  implementation localGroovy() //groovy sdk
+
+  implementation 'com.android.tools.build:gradle:3.6.1'
+  implementation 'com.android.tools.build:gradle-api:3.6.1'
+
+  implementation 'com.xander.plugin.asm:plugin-library:1.0.0'
+
+}

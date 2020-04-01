@@ -1,0 +1,27 @@
+apply plugin: 'java-library'
+apply plugin: "maven"
+
+def _version = "1.0.0"
+
+uploadArchives {
+  repositories.mavenDeployer {
+    repository(url: uri('../repos'))
+    pom.groupId = 'com.xander.dev'
+    pom.artifactId = 'tool'
+    pom.version = "$_version"
+  }
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+  archiveClassifier = 'sources'
+  from sourceSets.main.allSource
+}
+
+artifacts {
+  archives sourcesJar
+}
+
+
+dependencies {
+  implementation fileTree(dir: 'libs', include: ['*.jar'])
+}

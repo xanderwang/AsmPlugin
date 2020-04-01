@@ -1,12 +1,11 @@
 //include ':apt_lib'
 //include ':apt_process'
 
-include ':plugin-library'
+include ':dev-tool-library'
 
-include ':xaop-dev-tool-library'
+include ':asm-plugin-library'
+include ':asm-plugin'
 
-include ':xaop-plugin'
+include ':demo-app'
 
-//include ':xaop-transform'
-include ':xaop-app'
 

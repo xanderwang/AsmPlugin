@@ -7,7 +7,7 @@ import groovy.json.JsonBuilder
 buildscript {
 
   def usePlugin = true
-  rootProject.ext.isLocalMode = project.file('./repos/com/xander/xaop/plugin').exists() && usePlugin
+  rootProject.ext.isLocalMode = project.file('./repos/com/xander/plugin/asm').exists() && usePlugin
 
   repositories {
     maven { url uri("./repos") }
@@ -24,7 +24,7 @@ buildscript {
     // in the individual module build.gradle files
     if (rootProject.ext.isLocalMode) {
       //格式为 --> group:module:version
-      classpath "com.xander.xaop:plugin:1.0.0"
+      classpath "com.xander.plugin:asm:1.0.0"
     }
   }
 }
