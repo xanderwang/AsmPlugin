@@ -1,7 +1,7 @@
 package com.xander.xaop.demo;
 
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.xander.dev.tool.DebugLine;
 import com.xander.dev.tool.DebugTime;

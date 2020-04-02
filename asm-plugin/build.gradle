@@ -28,6 +28,8 @@ dependencies {
   implementation 'com.android.tools.build:gradle:3.6.1'
   implementation 'com.android.tools.build:gradle-api:3.6.1'
 
+  implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${rootProject.ext.kotlin_version}"
+
   implementation 'com.xander.plugin.asm:plugin-library:1.0.0'
 
 }

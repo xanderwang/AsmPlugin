@@ -31,17 +31,15 @@ dependencies {
   implementation 'com.android.tools.build:gradle:3.6.1'
   implementation 'com.android.tools.build:gradle-api:3.6.1'
 
-  implementation 'commons-io:commons-io:2.6'
-  implementation 'commons-codec:commons-codec:1.10'
+  implementation 'commons-io:commons-io:20030203.000550'
+  implementation 'commons-codec:commons-codec:20041127.091804'
   //noinspection GradleDependency
-  implementation 'org.ow2.asm:asm:5.1'
+  implementation 'org.ow2.asm:asm:8.0'
   //noinspection GradleDependency
-  implementation 'org.ow2.asm:asm-util:5.1'
+  implementation 'org.ow2.asm:asm-util:8.0'
   //noinspection GradleDependency
-  implementation 'org.ow2.asm:asm-commons:5.1'
+  implementation 'org.ow2.asm:asm-commons:8.0'
+
+  implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${rootProject.ext.kotlin_version}"
 
 }
-
-//repositories {
-//  jcenter()
-//}
