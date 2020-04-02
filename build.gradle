@@ -1,15 +1,13 @@
 //apply from: './config.gradle'
 
-import groovy.json.JsonBuilder
-
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
-
 buildscript {
 
   ext.kotlin_version = '1.3.71'
 
   def usePlugin = true
-  ext.isLocalMode = project.file('./repos/com/xander/plugin/asm/maven-metadata.xml').exists() && usePlugin
+  def hasPluginLib = project.file('./repos/com/xander/plugin/asm/plugin-library/maven-metadata.xml').exists()
+  def hasPlugin = project.file('./repos/com/xander/plugin/asm/maven-metadata.xml').exists()
+  ext.isLocalMode = hasPluginLib && hasPlugin && usePlugin
 
   repositories {
     maven { url uri("./repos") }
@@ -22,6 +20,7 @@ buildscript {
   dependencies {
     classpath 'com.android.tools.build:gradle:3.6.1'
     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${rootProject.ext.kotlin_version}"
+    classpath 'com.novoda:bintray-release:0.3.4'
 
     // NOTE: Do not place your application dependencies here; they belong
     // in the individual module build.gradle files
@@ -38,45 +37,6 @@ def isWindows() {
   return os_name.contains('window')
 }
 
-def defCmd() {
-  if (isWindows()) return 'gradlew.bat'
-  return './gradlew'
-}
-
-//task initRepo(type: Exec) {
-//  args = [
-//    defCmd(),
-//    ':xaop-library:clean',
-//    ':xaop-library:upload',
-//    ':xaop-transform:clean',
-//    ':xaop-transform:upload',
-//    ':xaop-plugin:clean',
-//    ':xaop-plugin:upload',
-//    '--info'
-//  ]
-//  commandLine args
-//}
-//
-//task initPluginLibrary(type: Exec) {
-//  args = [defCmd(), ':plugin-library:clean', ':plugin-library:upload', '--info']
-//  commandLine args
-//}
-//
-//task initXaopLibrary(type: Exec) {
-//  args = [defCmd(), ':xaop-library:clean', ':xaop-library:upload', '--info']
-//  commandLine args
-//}
-//
-//task initXaopTransform(type: Exec) {
-//  args = [defCmd(), ':xaop-transform:clean', ':xaop-transform:upload', '--info']
-//  commandLine args
-//}
-//
-//task initXaopPlugin(type: Exec) {
-//  args = [defCmd(), ':xaop-plugin:clean', ':xaop-plugin:upload', '--info']
-//  commandLine args
-//}
-
 allprojects {
   repositories {
     maven { url uri('../repos') }
@@ -85,28 +45,17 @@ allprojects {
     google()
     jcenter()
   }
-
-//  configurations {
-//    all {
-//      resolutionStrategy {
-//        eachDependency { dependency ->
-//          // 如果有需要修改为统一的库版本可以在这里修改
-//          // println new JsonBuilder( dependency ).toPrettyString()
-//          if (dependency.requested.group == 'xx.xx.xx' && dependency.requested.name == 'xxxx') {
-//            dependency.requested.version = 'xx.xx.xx'
-//          }
-//        }
-//
-//        dependencySubstitution {
-//          println "useRemote:${remote}"
-//          if (!remote) {
-//            substitute module("com.xander.xaop:transform:1.0.0") with project("::xaop-transform")
-//            substitute module("com.xander.xaop:gradle:1.0.0") with project("::xaop-plugin")
-//          }
-//        }
-//      }
-//    }
-//  }
+  // add dependency substitution rules
+  configurations.all {
+    resolutionStrategy.dependencySubstitution {
+      // Substitute project and module dependencies
+      substitute module('com.xander.plugin.asm:plugin-library') with project(':asm-plugin-library')
+      substitute module('com.xander.dev:tool') with project(':dev-tool-library')
+      //substitute project(':asm-plugin-library') with module('com.xander.plugin.asm:plugin-library:1.0.0')
+      // Substitute one module dependency for another
+      //substitute module('org.gradle:api:2.0') with module('org.gradle:api:2.1')
+    }
+  }
 }
 
 task clean(type: Delete) {

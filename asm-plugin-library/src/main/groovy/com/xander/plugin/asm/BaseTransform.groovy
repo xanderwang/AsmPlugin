@@ -79,6 +79,7 @@ abstract class BaseTransform extends Transform {
     throws TransformException, InterruptedException, IOException {
     //super.transform(transformInvocation)
     boolean skip = false
+    println "plugin start ===================================================================="
     pluginConfig = createPluginConfig()
     println "${name} config:${pluginConfig}"
     applyConfig(pluginConfig)

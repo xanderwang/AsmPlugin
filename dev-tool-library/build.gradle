@@ -2,6 +2,18 @@ apply plugin: 'java-library'
 apply plugin: 'kotlin'
 apply plugin: "maven"
 
+apply plugin: 'com.novoda.bintray-release'// jcenter
+
+// jcenter
+publish {
+  userOrg = 'xandywang'//bintray.com用户名
+  groupId = 'com.halloandroid'//jcenter上的路径
+  artifactId = 'tobebetter'//项目名称
+  publishVersion = '1.0.0'//版本号
+  desc = 'this is a dev tool for asm plugin'//描述，不重要
+  //website = 'https://github.com/shanlovana/tobebetter'//网站，最好有，不重要
+}
+
 def _version = "1.0.0"
 
 uploadArchives {
