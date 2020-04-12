@@ -1,14 +1,30 @@
 apply plugin: 'groovy'
 apply plugin: 'maven'
 
+apply plugin: 'com.novoda.bintray-release'
+
+dependencies {
+  implementation gradleApi() //gradle sdk
+  implementation localGroovy() //groovy sdk
+  implementation 'com.android.tools.build:gradle:3.6.1'
+  implementation 'com.android.tools.build:gradle-api:3.6.1'
+  implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${rootProject.ext.kotlin_version}"
+  implementation 'com.xander.plugin.asm:plugin-library:1.0.0'
+}
+
+// 项目的地址
+def _siteUrl = 'https://github.com/XanderWang/AsmPlugin'
+def _name = 'asm'
+def _group = 'com.xander.plugin'
+def _artifactId = 'asm'
 def _version = "1.0.0"
 
 uploadArchives {
   repositories.mavenDeployer {
     repository(url: uri('../repos'))
-    pom.groupId = 'com.xander.plugin'
-    pom.artifactId = 'asm'
-    pom.version = "$_version"
+    pom.groupId = _group
+    pom.artifactId = _artifactId
+    pom.version = _version
   }
 }
 
@@ -17,19 +33,37 @@ task sourcesJar(type: Jar, dependsOn: classes) {
   from sourceSets.main.allSource
 }
 
+task javadocJar(type: Jar, dependsOn: javadoc) {
+  archiveClassifier = 'javadoc'
+  from javadoc.destinationDir
+}
+
+javadoc { //jav doc采用utf-8编码否则会报“GBK的不可映射字符”错误
+  options{
+    encoding "UTF-8"
+    charSet 'UTF-8'
+  }
+}
+
 artifacts {
+  archives javadocJar
   archives sourcesJar
 }
 
-dependencies {
-  implementation gradleApi() //gradle sdk
-  implementation localGroovy() //groovy sdk
-
-  implementation 'com.android.tools.build:gradle:3.6.1'
-  implementation 'com.android.tools.build:gradle-api:3.6.1'
-
-  implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${rootProject.ext.kotlin_version}"
-
-  implementation 'com.xander.plugin.asm:plugin-library:1.0.0'
-
+publish {
+  // 各个字段的含义见 https://github.com/novoda/bintray-release/wiki/Configuration-of-the-publish-closure
+  Properties properties = new Properties()
+  properties.load(project.rootProject.file('local.properties').newDataInputStream())
+  def user = properties.getProperty('BINTRAY_USER')
+  def key = properties.getProperty('BINTRAY_KEY')
+  userOrg = 'xander'
+//  repoName = ''
+  uploadName = _name
+  groupId = _group
+  artifactId = _artifactId
+  publishVersion = _version
+  desc = 'a dev tool lib for asm-plugin lib'
+  website = _siteUrl
+  bintrayUser = user
+  bintrayKey = key
 }

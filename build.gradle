@@ -4,7 +4,7 @@ buildscript {
 
   ext.kotlin_version = '1.3.71'
 
-  def usePlugin = true
+  def usePlugin = false
   def hasPluginLib = project.file('./repos/com/xander/plugin/asm/plugin-library/maven-metadata.xml').exists()
   def hasPlugin = project.file('./repos/com/xander/plugin/asm/maven-metadata.xml').exists()
   ext.isLocalMode = hasPluginLib && hasPlugin && usePlugin
@@ -20,7 +20,8 @@ buildscript {
   dependencies {
     classpath 'com.android.tools.build:gradle:3.6.1'
     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${rootProject.ext.kotlin_version}"
-    classpath 'com.novoda:bintray-release:0.3.4'
+
+    classpath 'com.novoda:bintray-release:0.+'
 
     // NOTE: Do not place your application dependencies here; they belong
     // in the individual module build.gradle files
@@ -49,8 +50,8 @@ allprojects {
   configurations.all {
     resolutionStrategy.dependencySubstitution {
       // Substitute project and module dependencies
-      substitute module('com.xander.plugin.asm:plugin-library') with project(':asm-plugin-library')
-      substitute module('com.xander.dev:tool') with project(':dev-tool-library')
+//      substitute module('com.xander.plugin.asm:plugin-library') with project(':asm-plugin-library')
+//      substitute module('com.xander.dev:tool') with project(':dev-tool-library')
       //substitute project(':asm-plugin-library') with module('com.xander.plugin.asm:plugin-library:1.0.0')
       // Substitute one module dependency for another
       //substitute module('org.gradle:api:2.0') with module('org.gradle:api:2.1')
