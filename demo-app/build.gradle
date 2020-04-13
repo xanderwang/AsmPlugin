@@ -3,7 +3,7 @@ apply plugin: 'com.android.application'
 if (rootProject.ext.isLocalMode) {
   println "in demo-app, start apply plugin"
   // com.xander.xaop 为 resources/META-INF/gradle-plugins 下的 properties 文件名称
-  apply plugin: 'com.xander.plugin.asm'
+  apply plugin: 'com.xander.plugin.dev-plugin'
   asmConfig {
     "log" true
   }
@@ -36,8 +36,9 @@ dependencies {
   androidTestImplementation 'androidx.test.ext:junit:1.1.1'
   androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
-  implementation 'com.xander.dev:tool:1.0.0'
   implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${rootProject.ext.kotlin_version}"
+
+  implementation 'com.xander.dev.tool:dev-tool:1.0.0'
 }
 
 

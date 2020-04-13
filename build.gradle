@@ -7,7 +7,8 @@ buildscript {
   def usePlugin = false
   def hasPluginLib = project.file('./repos/com/xander/plugin/asm/plugin-library/maven-metadata.xml').exists()
   def hasPlugin = project.file('./repos/com/xander/plugin/asm/maven-metadata.xml').exists()
-  ext.isLocalMode = hasPluginLib && hasPlugin && usePlugin
+  //ext.isLocalMode = hasPluginLib && hasPlugin && usePlugin
+  ext.isLocalMode = true
 
   repositories {
     maven { url uri("./repos") }
@@ -27,7 +28,7 @@ buildscript {
     // in the individual module build.gradle files
     if (rootProject.ext.isLocalMode) {
       //格式为 --> group:module:version
-      classpath "com.xander.plugin:asm:1.0.0"
+      classpath "com.xander.plugin:dev-plugin:1.0.0"
     }
   }
 }

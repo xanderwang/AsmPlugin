@@ -9,14 +9,16 @@ dependencies {
   implementation 'com.android.tools.build:gradle:3.6.1'
   implementation 'com.android.tools.build:gradle-api:3.6.1'
   implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${rootProject.ext.kotlin_version}"
+
   implementation 'com.xander.plugin.asm:plugin-library:1.0.0'
+
 }
 
 // 项目的地址
 def _siteUrl = 'https://github.com/XanderWang/AsmPlugin'
 def _name = 'asm'
 def _group = 'com.xander.plugin'
-def _artifactId = 'asm'
+def _artifactId = 'dev-plugin'
 def _version = "1.0.0"
 
 uploadArchives {
