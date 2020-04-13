@@ -4,8 +4,8 @@
 include ':dev-tool-library'
 
 include ':asm-plugin-library'
-include ':asm-plugin'
+//include ':asm-plugin'
 
-include ':demo-app'
+//include ':demo-app'
 
 

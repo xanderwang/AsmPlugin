@@ -14,7 +14,7 @@ def _siteUrl = 'https://github.com/XanderWang/AsmPlugin'
 // git的路径
 def _gitUrl = 'https://github.com/XanderWang/AsmPlugin.git'
 // name
-def _name = ""
+def _name = "dev-tool"
 // group
 def _group = 'com.xander.dev.tool'
 def _artifactId = 'dev-tool'
@@ -57,12 +57,12 @@ publish {
   properties.load(project.rootProject.file('local.properties').newDataInputStream())
   def user = properties.getProperty('BINTRAY_USER')
   def key = properties.getProperty('BINTRAY_KEY')
-  userOrg = 'xander'
-//  repoName = ''
-  uploadName = _name
+  userOrg = user
+  repoName = 'maven'
   groupId = _group
   artifactId = _artifactId
   publishVersion = _version
+  dryRun = false
   desc = 'a dev tool lib for asm-plugin lib'
   website = _siteUrl
   bintrayUser = user
