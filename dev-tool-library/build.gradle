@@ -22,7 +22,7 @@ def _version = "1.0.0"
 
 uploadArchives {
   repositories.mavenDeployer {
-    repository(url: uri('../repos'))
+    repository(url: uri("${rootProject.ext.repoPath}"))
     pom.groupId = _group
     pom.artifactId = _artifactId
     pom.version = "$_version"

@@ -1,17 +1,10 @@
-apply plugin: 'groovy'
+//apply plugin: 'groovy'
 apply plugin: 'maven'
-
+apply plugin: 'kotlin'
 apply plugin: 'com.novoda.bintray-release'
 
 dependencies {
-  implementation gradleApi() //gradle sdk
-  implementation localGroovy() //groovy sdk
-  implementation 'com.android.tools.build:gradle:3.6.1'
-  implementation 'com.android.tools.build:gradle-api:3.6.1'
-  implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${rootProject.ext.kotlin_version}"
-
-  implementation 'com.xander.plugin.asm:plugin-library:1.0.0'
-
+  api 'com.xander.plugin.asm:plugin-library:1.1.0'
 }
 
 // 项目的地址
@@ -19,11 +12,11 @@ def _siteUrl = 'https://github.com/XanderWang/AsmPlugin'
 def _name = 'asm'
 def _group = 'com.xander.plugin'
 def _artifactId = 'dev-plugin'
-def _version = "1.0.0"
+def _version = "1.1.0"
 
 uploadArchives {
   repositories.mavenDeployer {
-    repository(url: uri('../repos'))
+    repository(url: uri("${rootProject.ext.repoPath}"))
     pom.groupId = _group
     pom.artifactId = _artifactId
     pom.version = _version
@@ -40,8 +33,9 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
   from javadoc.destinationDir
 }
 
-javadoc { //jav doc采用utf-8编码否则会报“GBK的不可映射字符”错误
-  options{
+javadoc {
+  //jav doc采用utf-8编码否则会报“GBK的不可映射字符”错误
+  options {
     encoding "UTF-8"
     charSet 'UTF-8'
   }

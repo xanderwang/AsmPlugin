@@ -1,41 +1,39 @@
 apply plugin: 'java-library'
-apply plugin: 'groovy'
+//apply plugin: 'groovy'
 apply plugin: 'maven'
-
+apply plugin: 'kotlin'
 apply plugin: 'com.novoda.bintray-release'
 
 dependencies {
-  implementation gradleApi() //gradle sdk
-  implementation localGroovy() //groovy sdk
+  api gradleApi() //gradle sdk
+  api localGroovy() //groovy sdk
 
-  implementation 'com.android.tools.build:gradle:3.6.1'
-  implementation 'com.android.tools.build:gradle-api:3.6.1'
+  api 'com.android.tools.build:gradle:3.6.1'
+  api 'com.android.tools.build:gradle-api:3.6.1'
 
-  implementation 'commons-io:commons-io:2.6'
-  implementation 'commons-codec:commons-codec:1.14'
+  api 'commons-io:commons-io:2.6'
+  api 'commons-codec:commons-codec:1.14'
   //noinspection GradleDependency
-  implementation 'org.ow2.asm:asm:8.0'
+  api 'org.ow2.asm:asm:9.0'
   //noinspection GradleDependency
-  implementation 'org.ow2.asm:asm-util:8.0'
+  api 'org.ow2.asm:asm-util:9.0'
   //noinspection GradleDependency
-  implementation 'org.ow2.asm:asm-commons:8.0'
+  api 'org.ow2.asm:asm-commons:9.0'
 
-  implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${rootProject.ext.kotlin_version}"
+  api "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${rootProject.ext.kotlin_version}"
 
 }
-
-def _local = true
 
 // 项目的地址
 def _siteUrl = 'https://github.com/XanderWang/AsmPlugin'
 def _name = 'plugin-library'
 def _group = 'com.xander.plugin.asm'
 def _artifactId = 'plugin-library'
-def _version = "1.0.0"
+def _version = "1.1.0"
 
 uploadArchives {
   repositories.mavenDeployer {
-    repository(url: uri(_local ? '../repos' : '../repos'))
+    repository(url: uri("${rootProject.ext.repoPath}"))
     pom.groupId = _group
     pom.artifactId = _artifactId
     pom.version = _version
