@@ -18,7 +18,7 @@ buildscript {
   }
   ext.isLocalMode = true
 
-  ext.editPluginLib = true // 用来控制 plugin 项目时否依赖本地的项目
+  ext.editPluginLib = false // 用来控制 plugin 项目时否依赖本地的项目
 
   ext.editPlugin = true // 用来控制时否需要用 plugin ，有时候需要发布到本地仓库来验证功能
 
@@ -68,6 +68,7 @@ allprojects {
         //substitute project(':asm-plugin-library') with module('com.xander.plugin.asm:plugin-library:1.1.0')
         substitute module('com.xander.plugin.asm:plugin-library') with project(':asm-plugin-library')
       }
+      substitute module('com.xander.dev.tool:dev-tool') with project(':dev-tool-library')
       // Substitute one module dependency for another
       //substitute module('org.gradle:api:2.0') with module('org.gradle:api:2.1')
     }

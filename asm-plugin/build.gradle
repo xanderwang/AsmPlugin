@@ -1,9 +1,12 @@
-//apply plugin: 'groovy'
+apply plugin: 'groovy'
 apply plugin: 'maven'
 apply plugin: 'kotlin'
 apply plugin: 'com.novoda.bintray-release'
 
 dependencies {
+  api gradleApi() //gradle sdk
+  api localGroovy() //groovy sdk
+
   api 'com.xander.plugin.asm:plugin-library:1.1.0'
 }
 
