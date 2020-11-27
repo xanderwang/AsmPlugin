@@ -5,6 +5,7 @@ if (rootProject.ext.usePlugin) {
   // com.xander.xaop 为 resources/META-INF/gradle-plugins 下的 properties 文件名称
   apply plugin: 'com.xander.plugin.dev-plugin'
   asmConfig {
+    "skipJar" false
     "log" true
   }
   println "in demo-app, end apply plugin"

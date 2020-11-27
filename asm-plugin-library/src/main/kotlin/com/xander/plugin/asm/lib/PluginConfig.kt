@@ -8,13 +8,15 @@ open class PluginConfig {
   var releaseSkip = false
   var skipJar = true
   var timeAnnotation: String = "com.xander.dev.tool.DevTime"
+  var useExecutor = false
 
-  override fun toString(): String {
-    return "PluginConfig(log=$log, debugSkip=$debugSkip, releaseSkip=$releaseSkip, skipJar=$skipJar)"
-  }
 
   companion object {
     val debug = PluginConfig()
+  }
+
+  override fun toString(): String {
+    return "PluginConfig(log=$log, classLog=$classLog, methodLog=$methodLog, debugSkip=$debugSkip, releaseSkip=$releaseSkip, skipJar=$skipJar, timeAnnotation='$timeAnnotation', useExecutor=$useExecutor)"
   }
 
 }

@@ -2,7 +2,8 @@ buildscript {
 
   ext.kotlin_version = '1.4.20'
 
-  ext.repoPath = rootProject.file('/repos').absolutePath
+  ext.repoPath = rootProject.file('./repos').absolutePath
+//  println("ext.repoPath:${rootProject.ext.repoPath}")
 
   ext.hasPluginLib = rootProject.file('/repos/com/xander/plugin/asm/plugin-library/maven-metadata.xml').exists()
   ext.hasPlugin = rootProject.file('/repos/com/xander/plugin/asm/maven-metadata.xml').exists()
@@ -10,6 +11,8 @@ buildscript {
   ext.useLocalPluginLib = true // 用来控制 plugin 项目时否依赖本地的项目
 
   ext.usePlugin = true // 是否使用插件，可以手动打开
+
+  ext.debugPlugin = true
 
   repositories {
     maven { url uri("${rootProject.ext.repoPath}") }
@@ -29,7 +32,7 @@ buildscript {
     // in the individual module build.gradle files
     if (rootProject.ext.usePlugin) {
       //格式为 --> group:module:version
-      classpath "com.xander.plugin:dev-plugin:1.1.0"
+      classpath "com.xander.plugin:dev-plugin:1.1.2"
     }
   }
 }

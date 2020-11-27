@@ -91,7 +91,8 @@ open abstract class BaseTransform(val project: Project) : Transform() {
         val status = jarInput.status
         if (transformInvocation.isIncremental) {
           when (status) {
-            Status.NOTCHANGED -> { }
+            Status.NOTCHANGED -> {
+            }
             Status.ADDED, Status.CHANGED -> transformJar(jarInput.file, dest)
             Status.REMOVED -> if (dest.exists()) FileUtils.forceDelete(dest)
           }
@@ -101,7 +102,13 @@ open abstract class BaseTransform(val project: Project) : Transform() {
             cleanDexBuilderFolder(dest)
             flagForCleanDexBuilderFolder = true
           }
-          transformJar(jarInput.file, dest)
+          if (pluginConfig.useExecutor) {
+            waitableExecutor.execute {
+              transformJar(jarInput.file, dest)
+            }
+          } else {
+            transformJar(jarInput.file, dest)
+          }
         }
       }
       for (directoryInput in input.directoryInputs) {
@@ -140,7 +147,13 @@ open abstract class BaseTransform(val project: Project) : Transform() {
                   //maybe mkdirs fail for some strange reason, try again.
                   Files.createParentDirs(destFile)
                 }
-                transformSingleFile(inputFile, destFile, srcDirPath)
+                if (pluginConfig.useExecutor) {
+                  waitableExecutor.execute {
+                    transformSingleFile(inputFile, destFile, srcDirPath)
+                  }
+                } else {
+                  transformSingleFile(inputFile, destFile, srcDirPath)
+                }
               }
             }
           }
@@ -182,27 +195,30 @@ open abstract class BaseTransform(val project: Project) : Transform() {
       }
       // 一次处理一个文件夹下面的文件，防止创建的任务过多
       if (childFiles.isNotEmpty()) {
-        transformFileList(childFiles, inputDirPath, outputDirPath)
+        if (pluginConfig.useExecutor) {
+          waitableExecutor.execute {
+            transformFileList(childFiles, inputDirPath, outputDirPath)
+          }
+        } else {
+          transformFileList(childFiles, inputDirPath, outputDirPath)
+        }
       }
     }
   }
 
   private fun transformFileList(sourceList: ArrayList<File>, inputDirPath: String, outputDirPath: String) {
     if (pluginConfig.log) {
-      println("transformSingleFile inputDirPath:${inputDirPath}")
-      println("transformSingleFile outputDirPath:${outputDirPath}")
+      println("transformFileList inputDirPath:${inputDirPath}")
+      println("transformFileList outputDirPath:${outputDirPath}")
     }
-    // executorFacade.executor.execute {
-    waitableExecutor.execute {
-      for (sourceFile in sourceList) {
-        val sourceFilePath = sourceFile.absolutePath
-        val outputFile = File(sourceFilePath.replace(inputDirPath, outputDirPath))
-        if (pluginConfig.log) {
-          println("transformFileList sourceFile:${sourceFile.absolutePath}")
-          println("transformFileList outputFile:${outputFile.absolutePath}")
-        }
-        weaver.weaveSingleClass(sourceFile, outputFile, inputDirPath)
+    for (sourceFile in sourceList) {
+      val sourceFilePath = sourceFile.absolutePath
+      val outputFile = File(sourceFilePath.replace(inputDirPath, outputDirPath))
+      if (pluginConfig.log) {
+        println("transformFileList sourceFile:${sourceFile.absolutePath}")
+        println("transformFileList outputFile:${outputFile.absolutePath}")
       }
+      weaver.weaveSingleClass(sourceFile, outputFile, inputDirPath)
     }
   }
 
@@ -211,25 +227,23 @@ open abstract class BaseTransform(val project: Project) : Transform() {
       println("transformJar srcJar:${srcJar.absolutePath}")
       println("transformJar destJar:${destJar.absolutePath}")
     }
-    waitableExecutor.execute {
-      weaver.weaveJar(srcJar, destJar)
-    }
+    weaver.weaveJar(srcJar, destJar)
   }
 
   private fun cleanDexBuilderFolder(dest: File) {
     // waitableExecutor.execute {
-      try {
-        val dexBuilderDir = replaceLastPart(dest.absolutePath, name, "dexBuilder")
-        //intermediates/transforms/dexBuilder/debug
-        val file = File(dexBuilderDir).parentFile
-        println("clean dexBuilder folder:${file.absolutePath}")
-        if (file.exists() && file.isDirectory) {
-          FileUtils.deleteDirectory(file)
-          //com.android.utils.FileUtils.deleteDirectoryContents(file)
-        }
-      } catch (e: Exception) {
-        e.printStackTrace()
+    try {
+      val dexBuilderDir = replaceLastPart(dest.absolutePath, name, "dexBuilder")
+      //intermediates/transforms/dexBuilder/debug
+      val file = File(dexBuilderDir).parentFile
+      println("clean dexBuilder folder:${file.absolutePath}")
+      if (file.exists() && file.isDirectory) {
+        FileUtils.deleteDirectory(file)
+        //com.android.utils.FileUtils.deleteDirectoryContents(file)
       }
+    } catch (e: Exception) {
+      e.printStackTrace()
+    }
     // }
   }
 

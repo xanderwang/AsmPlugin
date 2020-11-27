@@ -16,7 +16,6 @@ import java.util.zip.ZipOutputStream
 
 open class BaseWeaverFactory : IWeaverFactory {
 
-  @Throws(IOException::class)
   override fun weaveJar(inputJar: File, outputJar: File) {
     val inputZip = ZipFile(inputJar)
     val outputZip = ZipOutputStream(BufferedOutputStream(Files.newOutputStream(outputJar.toPath())))
@@ -30,9 +29,14 @@ open class BaseWeaverFactory : IWeaverFactory {
         IOUtils.toByteArray(originalFile)
       } else {
         if (pluginConfig.classLog) {
-          println("weaveSingleClassToByteArray:$outEntry")
+          println("weaveJar entry:${entry.name}, outEntry:$outEntry")
         }
-        weaveSingleClassToByteArray(originalFile)
+        try {
+          weaveSingleClassToByteArray(originalFile)
+        } catch (exception: Exception) {
+          exception.printStackTrace()
+          IOUtils.toByteArray(originalFile)
+        }
       }
       val crc32 = CRC32()
       crc32.update(newEntryContent)
@@ -51,7 +55,6 @@ open class BaseWeaverFactory : IWeaverFactory {
     outputZip.close()
   }
 
-  @Throws(IOException::class)
   override fun weaveSingleClass(inputFile: File, outputFile: File, inputBaseDir: String) {
     if (inputFile.isDirectory) {
       println("weaveSingleClass:${inputFile.absolutePath} is dir !!!!!!!!!!")
@@ -79,19 +82,16 @@ open class BaseWeaverFactory : IWeaverFactory {
         fos.write(bytes)
         fos.close()
         inputStream.close()
-      } catch (e: Exception) {
-        e.printStackTrace()
+      } catch (exception: Exception) {
+        exception.printStackTrace()
         FileUtils.copyFile(inputFile, outputFile)
       }
     } else {
-        FileUtils.copyFile(inputFile, outputFile)
+      FileUtils.copyFile(inputFile, outputFile)
     }
   }
 
-
-
-  @Throws(IOException::class)
-  override fun weaveSingleClassToByteArray(inputStream: InputStream): ByteArray {
+  private fun weaveSingleClassToByteArray(inputStream: InputStream): ByteArray {
     val classWriter = ClassWriter(ClassWriter.COMPUTE_MAXS)
     // val classWriter: ClassWriter = ExtendClassWriter(classLoader, ClassWriter.COMPUTE_MAXS)
     // 自定义逻辑开始介入

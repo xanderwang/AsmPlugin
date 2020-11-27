@@ -15,7 +15,7 @@ open class TimeMethodVisitor(var methodName: String, access: Int, desc: String?,
   override fun visitAnnotation(desc: String, visible: Boolean): AnnotationVisitor {
     val desc = desc.replace("/",".")
     if (desc.contains(pluginConfig.timeAnnotation)) {
-      if (pluginConfig.methodLog) println("BaseMethodAdapter visitAnnotation :$desc")
+      if (pluginConfig.methodLog) println("TimeMethodVisitor visitAnnotation :$desc")
       debugTime = true
     }
     return super.visitAnnotation(desc, visible)
@@ -81,7 +81,7 @@ open class TimeMethodVisitor(var methodName: String, access: Int, desc: String?,
 
   init {
     if (pluginConfig.methodLog) {
-      println("BaseMethodAdapter method:$methodName")
+      println("TimeMethodVisitor method:$methodName")
     }
   }
 }
