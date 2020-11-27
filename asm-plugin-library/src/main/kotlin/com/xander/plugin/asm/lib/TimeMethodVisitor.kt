@@ -14,8 +14,8 @@ open class TimeMethodVisitor(var methodName: String, access: Int, desc: String?,
    */
   override fun visitAnnotation(desc: String, visible: Boolean): AnnotationVisitor {
     val desc = desc.replace("/",".")
-    if (desc.contains("com.xander.dev.tool.DebugTime")) {
-      if (pluginConfig?.log == true) println("BaseMethodAdapter visitAnnotation :$desc")
+    if (desc.contains(pluginConfig.timeAnnotation)) {
+      if (pluginConfig.methodLog) println("BaseMethodAdapter visitAnnotation :$desc")
       debugTime = true
     }
     return super.visitAnnotation(desc, visible)
@@ -42,9 +42,10 @@ open class TimeMethodVisitor(var methodName: String, access: Int, desc: String?,
   override fun visitInsn(opcode: Int) {
     if (debugTime) {
       if (opcode >= Opcodes.IRETURN && opcode <= Opcodes.RETURN || opcode == Opcodes.ATHROW) {
-        // 新建一个变量
-        val index = newLocal(Type.LONG_TYPE)
-        // 调用方法
+        // 读取方法名
+        mv.visitLdcInsn(methodName)
+
+        // 获取时间
         mv.visitMethodInsn(
             Opcodes.INVOKESTATIC,
             "java/lang/System",
@@ -52,21 +53,16 @@ open class TimeMethodVisitor(var methodName: String, access: Int, desc: String?,
             "()J",
             false
         )
-        // 读取参数
+        // 读取开始时间
         mv.visitVarInsn(Opcodes.LLOAD, timeVarIndex)
         // 做减法
         mv.visitInsn(Opcodes.LSUB)
-        // 写入变量
-        mv.visitVarInsn(Opcodes.LSTORE, index)
-        // 写入变量
-        mv.visitLdcInsn(methodName)
-        // 读取变量
-        mv.visitVarInsn(Opcodes.LLOAD, index)
-        // 调用方法
+
+        // 调用打印时间方法
         mv.visitMethodInsn(
             Opcodes.INVOKESTATIC,
             "com/xander/dev/tool/help/LogHelper",
-            "d",
+            "cost",
             "(Ljava/lang/String;J)V",
             false
         )
@@ -84,7 +80,7 @@ open class TimeMethodVisitor(var methodName: String, access: Int, desc: String?,
   }
 
   init {
-    if (pluginConfig.log) {
+    if (pluginConfig.methodLog) {
       println("BaseMethodAdapter method:$methodName")
     }
   }

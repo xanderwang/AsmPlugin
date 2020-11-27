@@ -54,18 +54,14 @@ open class ExtendClassWriter(private val urlClassLoader: ClassLoader, flags: Int
     while (type1SuperClassName != null || type2SuperClassName != null) {
       if (type1SuperClassName != null) {
         type1SuperClassName = getSuperClassName(type1SuperClassName)!!
-        if (type1SuperClassName != null) {
-          if (!superClassNames.add(type1SuperClassName)) {
-            return type1SuperClassName
-          }
+        if (!superClassNames.add(type1SuperClassName)) {
+          return type1SuperClassName
         }
       }
       if (type2SuperClassName != null) {
         type2SuperClassName = getSuperClassName(type2SuperClassName)!!
-        if (type2SuperClassName != null) {
-          if (!superClassNames.add(type2SuperClassName)) {
-            return type2SuperClassName
-          }
+        if (!superClassNames.add(type2SuperClassName)) {
+          return type2SuperClassName
         }
       }
     }

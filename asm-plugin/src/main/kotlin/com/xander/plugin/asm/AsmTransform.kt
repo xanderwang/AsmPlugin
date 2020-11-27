@@ -8,6 +8,7 @@ import org.gradle.api.Project
 import java.io.IOException
 
 class AsmTransform(project: Project) : BaseTransform(project) {
+
   override fun createWeaver(): BaseWeaverFactory {
     return BaseWeaverFactory()
   }
@@ -18,6 +19,7 @@ class AsmTransform(project: Project) : BaseTransform(project) {
 
   @Throws(TransformException::class, InterruptedException::class, IOException::class)
   override fun transform(transformInvocation: TransformInvocation) {
+    // println("AsmTransform transform =============================================")
     try {
       super.transform(transformInvocation)
     } catch (e: Exception) {

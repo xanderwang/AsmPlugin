@@ -15,7 +15,7 @@ def _siteUrl = 'https://github.com/XanderWang/AsmPlugin'
 def _name = 'asm'
 def _group = 'com.xander.plugin'
 def _artifactId = 'dev-plugin'
-def _version = "1.1.0"
+def _version = "1.1.1"
 
 uploadArchives {
   repositories.mavenDeployer {

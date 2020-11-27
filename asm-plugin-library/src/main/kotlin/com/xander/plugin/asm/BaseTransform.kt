@@ -7,10 +7,8 @@ import com.android.ide.common.workers.ExecutorServiceAdapter
 import com.google.common.io.Files
 import com.xander.plugin.asm.lib.*
 import com.xander.plugin.asm.lib.URLClassLoaderHelper.getClassLoader
-import groovy.lang.Closure
 import groovy.lang.Reference
 import org.apache.commons.io.FileUtils
-import org.codehaus.groovy.runtime.DefaultGroovyMethods
 import org.gradle.api.Project
 import java.io.File
 import java.io.IOException
@@ -72,7 +70,7 @@ open abstract class BaseTransform(val project: Project) : Transform() {
     val inputs = transformInvocation.inputs
     val referencedInputs = transformInvocation.referencedInputs
     val urlClassLoader = getClassLoader(inputs, referencedInputs, project)
-//    weaver.setClassLoader(urlClassLoader)
+    weaver.setClassLoader(urlClassLoader)
     var flagForCleanDexBuilderFolder = false
     for (input in inputs) {
       for (jarInput in input.jarInputs) {
@@ -86,7 +84,7 @@ open abstract class BaseTransform(val project: Project) : Transform() {
           println("jarInput:${jarInput.file.absolutePath} ,dest:${dest.absolutePath}")
         }
         if (skip.get() || pluginConfig.skipJar) {
-          println("name:$name ,skip transform jar: ${jarInput.file.absolutePath}")
+          println("skip transform jar: ${jarInput.file.absolutePath}")
           FileUtils.copyFile(jarInput.file, dest)
           continue
         }
@@ -99,7 +97,7 @@ open abstract class BaseTransform(val project: Project) : Transform() {
           }
         } else {
           //Forgive me!, Some project will store 3rd-party aar for serveral copies in dexbuilder folder,,unknown issue.
-          if (inDuplcatedClassSafeMode() && !flagForCleanDexBuilderFolder) {
+          if (inDuplicatedClassSafeMode() && !flagForCleanDexBuilderFolder) {
             cleanDexBuilderFolder(dest)
             flagForCleanDexBuilderFolder = true
           }
@@ -114,7 +112,7 @@ open abstract class BaseTransform(val project: Project) : Transform() {
             Format.DIRECTORY
         )
         if (pluginConfig.log) {
-          println("name:$name, directoryInput:${directoryInput.file.absolutePath},dest:${dest.absolutePath}")
+          println("directoryInput:${directoryInput.file.absolutePath},dest:${dest.absolutePath}")
         }
         FileUtils.forceMkdir(dest)
         if (skip.get()) {
@@ -157,127 +155,105 @@ open abstract class BaseTransform(val project: Project) : Transform() {
     println("plugin: $name, cost time: $costTime ms")
   }
 
-  private fun transformSingleFile(inputFile: File, outputFile: File, srcBaseDir: String?) {
+  private fun transformSingleFile(inputFile: File, outputFile: File, srcBaseDir: String) {
     if (pluginConfig.log) {
       println("transformSingleFile inputFile:${inputFile.absolutePath}")
       println("transformSingleFile outputFile:${outputFile.absolutePath}")
     }
-    waitableExecutor.execute(object : Closure<Any?>(this, this) {
-      fun doCall(it: Any?): Any? {
-        weaver.weaveSingleClass(inputFile, outputFile, srcBaseDir!!)
-        return null
-      }
-
-      fun doCall() {
-        doCall(null)
-      }
-    })
+    waitableExecutor.execute {
+      weaver.weaveSingleClass(inputFile, outputFile, srcBaseDir)
+    }
   }
 
   @Throws(IOException::class)
-  protected fun transformDir(sourceDir: File?, inputDirPath: String?, outputDirPath: String?) {
-    if (null != sourceDir && sourceDir.isDirectory) {
+  protected fun transformDir(sourceDir: File, inputDirPath: String, outputDirPath: String) {
+    if (sourceDir.isDirectory) {
       val files = sourceDir.listFiles()
       if (null == files || files.isEmpty()) {
         return
       }
       val childFiles = ArrayList<File>()
-      for (sourceFile in sourceDir.listFiles()) {
+      for (sourceFile in files) {
         if (sourceFile.isDirectory) {
           transformDir(sourceFile, inputDirPath, outputDirPath)
         } else {
           childFiles.add(sourceFile)
         }
       }
-
       // 一次处理一个文件夹下面的文件，防止创建的任务过多
-      if (!childFiles.isEmpty()) {
+      if (childFiles.isNotEmpty()) {
         transformFileList(childFiles, inputDirPath, outputDirPath)
       }
     }
   }
 
-  private fun transformFileList(sourceList: ArrayList<File>, inputDirPath: String?, outputDirPath: String?) {
-    waitableExecutor.execute(object : Closure<Void?>(this, this) {
-      fun doCall(it: Any? = null) {
-        for (sourceFile in sourceList) {
-          val sourceFilePath = sourceFile.absolutePath
-          val outputFile = File(sourceFilePath.replace(inputDirPath!!, outputDirPath!!))
-          if (pluginConfig.log) {
-            DefaultGroovyMethods.println(this@BaseTransform,
-                "transformFileList sourceFile:" + sourceFile.absolutePath)
-            DefaultGroovyMethods.println(this@BaseTransform,
-                "transformFileList outputFile:" + outputFile.absolutePath)
-          }
-          weaver.weaveSingleClass(sourceFile, outputFile, inputDirPath)
+  private fun transformFileList(sourceList: ArrayList<File>, inputDirPath: String, outputDirPath: String) {
+    if (pluginConfig.log) {
+      println("transformSingleFile inputDirPath:${inputDirPath}")
+      println("transformSingleFile outputDirPath:${outputDirPath}")
+    }
+    // executorFacade.executor.execute {
+    waitableExecutor.execute {
+      for (sourceFile in sourceList) {
+        val sourceFilePath = sourceFile.absolutePath
+        val outputFile = File(sourceFilePath.replace(inputDirPath, outputDirPath))
+        if (pluginConfig.log) {
+          println("transformFileList sourceFile:${sourceFile.absolutePath}")
+          println("transformFileList outputFile:${outputFile.absolutePath}")
         }
+        weaver.weaveSingleClass(sourceFile, outputFile, inputDirPath)
       }
-    })
+    }
   }
 
   private fun transformJar(srcJar: File, destJar: File) {
     if (pluginConfig.log) {
-      DefaultGroovyMethods.println(this, "transformJar srcJar:" + srcJar.absolutePath)
-      DefaultGroovyMethods.println(this, "transformJar destJar:" + destJar.absolutePath)
+      println("transformJar srcJar:${srcJar.absolutePath}")
+      println("transformJar destJar:${destJar.absolutePath}")
     }
-    waitableExecutor.execute(object : Closure<Any?>(this, this) {
-      fun doCall(it: Any?): Any? {
-        weaver.weaveJar(srcJar, destJar)
-        return null
-      }
-
-      fun doCall() {
-        doCall(null)
-      }
-    })
+    waitableExecutor.execute {
+      weaver.weaveJar(srcJar, destJar)
+    }
   }
 
   private fun cleanDexBuilderFolder(dest: File) {
-    waitableExecutor.execute(object : Closure<Any?>(this, this) {
-      fun doCall(it: Any?): Any? {
-        try {
-          val dexBuilderDir = replaceLastPart(dest.absolutePath, name, "dexBuilder")
-          //intermediates/transforms/dexBuilder/debug
-          val file = File(dexBuilderDir).parentFile
-          println("clean dexBuilder folder:${file.absolutePath}")
-          if (file.exists() && file.isDirectory) {
-            FileUtils.deleteDirectory(file)
-            //com.android.utils.FileUtils.deleteDirectoryContents(file)
-          }
-        } catch (e: Exception) {
-          e.printStackTrace()
+    // waitableExecutor.execute {
+      try {
+        val dexBuilderDir = replaceLastPart(dest.absolutePath, name, "dexBuilder")
+        //intermediates/transforms/dexBuilder/debug
+        val file = File(dexBuilderDir).parentFile
+        println("clean dexBuilder folder:${file.absolutePath}")
+        if (file.exists() && file.isDirectory) {
+          FileUtils.deleteDirectory(file)
+          //com.android.utils.FileUtils.deleteDirectoryContents(file)
         }
-        return null
+      } catch (e: Exception) {
+        e.printStackTrace()
       }
-
-      fun doCall() {
-        doCall(null)
-      }
-    })
-    executorFacade.executor
+    // }
   }
 
-  protected fun replaceLastPart(originString: String, replacement: String, toreplace: String?): String {
+  private fun replaceLastPart(originString: String, replacement: String, toReplace: String): String {
     val start = originString.lastIndexOf(replacement)
     val builder = StringBuilder()
     builder.append(originString.substring(0, start))
-    builder.append(toreplace)
+    builder.append(toReplace)
     builder.append(originString.substring(start + replacement.length))
     return builder.toString()
   }
 
-  protected open fun inDuplcatedClassSafeMode(): Boolean {
+  protected open fun inDuplicatedClassSafeMode(): Boolean {
     return false
   }
 
-  protected var pluginConfig = PluginConfig.debug
+  private var pluginConfig = PluginConfig.debug
 
-  protected var weaver: IWeaverFactory
+  private var weaver: IWeaverFactory
 
   private val waitableExecutor: WaitableExecutor = WaitableExecutor.useGlobalSharedThreadPool()
 
   private val executorFacade: ExecutorServiceAdapter = ExecutorServiceAdapter(
-      "",
+      name,
       "",
       ForkJoinPool.commonPool()
   )
@@ -288,5 +264,8 @@ open abstract class BaseTransform(val project: Project) : Transform() {
 
   init {
     weaver = createWeaver()
+    SCOPES.add(QualifiedContent.Scope.PROJECT)
+    SCOPES.add(QualifiedContent.Scope.SUB_PROJECTS)
+    SCOPES.add(QualifiedContent.Scope.EXTERNAL_LIBRARIES)
   }
 }

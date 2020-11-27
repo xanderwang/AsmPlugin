@@ -29,6 +29,9 @@ open class BaseWeaverFactory : IWeaverFactory {
       newEntryContent = if (!isWearableClass(outEntry.name.replace("/", "."))) {
         IOUtils.toByteArray(originalFile)
       } else {
+        if (pluginConfig.classLog) {
+          println("weaveSingleClassToByteArray:$outEntry")
+        }
         weaveSingleClassToByteArray(originalFile)
       }
       val crc32 = CRC32()
@@ -50,29 +53,38 @@ open class BaseWeaverFactory : IWeaverFactory {
 
   @Throws(IOException::class)
   override fun weaveSingleClass(inputFile: File, outputFile: File, inputBaseDir: String) {
+    if (inputFile.isDirectory) {
+      println("weaveSingleClass:${inputFile.absolutePath} is dir !!!!!!!!!!")
+      return
+    }
     var inputBaseDir = inputBaseDir
-    if (!inputBaseDir.endsWith("/")) {
-      inputBaseDir = "$inputBaseDir/"
+    if (!inputBaseDir.endsWith(File.separatorChar)) {
+      inputBaseDir = "$inputBaseDir${File.separatorChar}"
     }
     val className = inputFile.absolutePath
         .replace(inputBaseDir, "")
-        .replace("/", ".")
-    if (pluginConfig?.log==true) {
-      println("class name:$className")
+        .replace("${File.separatorChar}", ".")
+    if (pluginConfig.classLog) {
+      // println("weaveSingleClass inputFile:${inputFile.absolutePath}")
+      // println("weaveSingleClass outputFile:${outputFile.absolutePath}")
+      // println("weaveSingleClass inputBaseDir:$inputBaseDir")
+      println("weaveSingleClass:$className")
     }
+    FileUtils.touch(outputFile)
     if (isWearableClass(className)) {
-      FileUtils.touch(outputFile)
-      val inputStream: InputStream = FileInputStream(inputFile)
-      val bytes = weaveSingleClassToByteArray(inputStream)
-      val fos = FileOutputStream(outputFile)
-      fos.write(bytes)
-      fos.close()
-      inputStream.close()
-    } else {
-      if (inputFile.isFile) {
-        FileUtils.touch(outputFile)
+      try {
+        val inputStream: InputStream = FileInputStream(inputFile)
+        val bytes = weaveSingleClassToByteArray(inputStream)
+        val fos = FileOutputStream(outputFile)
+        fos.write(bytes)
+        fos.close()
+        inputStream.close()
+      } catch (e: Exception) {
+        e.printStackTrace()
         FileUtils.copyFile(inputFile, outputFile)
       }
+    } else {
+        FileUtils.copyFile(inputFile, outputFile)
     }
   }
 
@@ -94,21 +106,24 @@ open class BaseWeaverFactory : IWeaverFactory {
     return createClassVisitor(classWriter)
   }
 
-  override fun isWearableClass(fullQualifiedClassName: String): Boolean {
-    return (fullQualifiedClassName.endsWith(".class") && !fullQualifiedClassName.contains("R\$")
-        && !fullQualifiedClassName.contains("R.class") && !fullQualifiedClassName.contains("BuildConfig.class"))
+  override fun isWearableClass(className: String): Boolean {
+    return (className.endsWith(".class") && !className.contains("R\$")
+        && !className.contains("R.class") && !className.contains("BuildConfig.class"))
   }
 
   override fun createClassVisitor(classWriter: ClassWriter): ClassVisitor {
     return BaseClassVisitor(classWriter, this)
   }
 
-  override fun createMethodVisitor(name: String, access: Int, desc: String, mv: MethodVisitor): MethodVisitor {
-    return TimeMethodVisitor(name, access, desc, mv)
+  override fun createMethodVisitor(methodName: String, access: Int, desc: String?, mv: MethodVisitor): MethodVisitor {
+    return TimeMethodVisitor(methodName, access, desc, mv)
   }
 
-  var classLoader: ClassLoader? = null
+  private var classLoader: ClassLoader = ClassLoader.getSystemClassLoader()
 
+  override fun setClassLoader(classLoader: ClassLoader) {
+    this.classLoader = classLoader
+  }
 
   companion object {
     private val ZERO = FileTime.fromMillis(0)

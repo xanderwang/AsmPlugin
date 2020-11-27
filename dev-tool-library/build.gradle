@@ -1,8 +1,28 @@
-apply plugin: 'java-library'
-apply plugin: 'kotlin'
+//apply plugin: 'java-library'
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
 apply plugin: "maven"
 
 apply plugin: 'com.novoda.bintray-release'
+
+android {
+  compileSdkVersion 28
+  buildToolsVersion "28.0.3"
+  defaultConfig {
+    minSdkVersion 15
+    targetSdkVersion 28
+    versionCode 1
+    versionName "1.0"
+
+    //testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+  }
+}
+
+repositories {
+  flatDir {
+    dirs 'libs'
+  }
+}
 
 dependencies {
   implementation fileTree(dir: 'libs', include: ['*.jar'])
@@ -18,7 +38,7 @@ def _name = "dev-tool"
 // group
 def _group = 'com.xander.dev.tool'
 def _artifactId = 'dev-tool'
-def _version = "1.0.0"
+def _version = "1.1.1"
 
 uploadArchives {
   repositories.mavenDeployer {
@@ -29,27 +49,28 @@ uploadArchives {
   }
 }
 
-task sourcesJar(type: Jar, dependsOn: classes) {
-  archiveClassifier = 'sources'
-  from sourceSets.main.allSource
-}
+//task sourcesJar(type: Jar, dependsOn: classes) {
+//  archiveClassifier = 'sources'
+//  from sourceSets.main.allSource
+//}
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
-  archiveClassifier = 'javadoc'
-  from javadoc.destinationDir
-}
+//task javadocJar(type: Jar, dependsOn: javadoc) {
+//  archiveClassifier = 'javadoc'
+//  from javadoc.destinationDir
+//}
 
-javadoc { //jav doc采用utf-8编码否则会报“GBK的不可映射字符”错误
-  options{
-    encoding "UTF-8"
-    charSet 'UTF-8'
-  }
-}
+//javadoc {
+//  //jav doc采用utf-8编码否则会报“GBK的不可映射字符”错误
+//  options {
+//    encoding "UTF-8"
+//    charSet 'UTF-8'
+//  }
+//}
 
-artifacts {
-  archives javadocJar
-  archives sourcesJar
-}
+//artifacts {
+//  archives javadocJar
+//  archives sourcesJar
+//}
 
 publish {
   // 各个字段的含义见 https://github.com/novoda/bintray-release/wiki/Configuration-of-the-publish-closure

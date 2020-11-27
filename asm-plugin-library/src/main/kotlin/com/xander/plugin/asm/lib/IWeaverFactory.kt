@@ -9,6 +9,8 @@ import java.io.InputStream
 
 open interface IWeaverFactory {
 
+  fun setClassLoader(classLoader: ClassLoader)
+
   @Throws(IOException::class)
   fun weaveJar(inputJar: File, outputJar: File)
 
@@ -19,7 +21,7 @@ open interface IWeaverFactory {
    * Check a certain file is wearable
    */
   @Throws(IOException::class)
-  fun isWearableClass(filePath: String): Boolean
+  fun isWearableClass(className: String): Boolean
 
   /**
    * Weave single class to byte array
@@ -35,5 +37,5 @@ open interface IWeaverFactory {
   /**
    * 创建方法编辑器
    */
-  fun createMethodVisitor(name: String, access: Int, desc: String, mv: MethodVisitor): MethodVisitor
+  fun createMethodVisitor(methodName: String, access: Int, desc: String?, mv: MethodVisitor): MethodVisitor
 }

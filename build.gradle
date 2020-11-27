@@ -1,27 +1,15 @@
-//apply from: './config.gradle'
-
 buildscript {
 
   ext.kotlin_version = '1.4.20'
 
   ext.repoPath = rootProject.file('/repos').absolutePath
 
-  ext.usePluginLib = true
-
-  ext.usePlugin = true
   ext.hasPluginLib = rootProject.file('/repos/com/xander/plugin/asm/plugin-library/maven-metadata.xml').exists()
   ext.hasPlugin = rootProject.file('/repos/com/xander/plugin/asm/maven-metadata.xml').exists()
-  if (rootProject.ext.usePlugin) {
-    ext.isLocalMode = rootProject.ext.hasPluginLib && rootProject.ext.hasPlugin
-  } else {
-    ext.isLocalMode = false
-  }
-  ext.isLocalMode = true
 
-  ext.editPluginLib = false // 用来控制 plugin 项目时否依赖本地的项目
+  ext.useLocalPluginLib = true // 用来控制 plugin 项目时否依赖本地的项目
 
-  ext.editPlugin = true // 用来控制时否需要用 plugin ，有时候需要发布到本地仓库来验证功能
-
+  ext.usePlugin = true // 是否使用插件，可以手动打开
 
   repositories {
     maven { url uri("${rootProject.ext.repoPath}") }
@@ -39,7 +27,7 @@ buildscript {
 
     // NOTE: Do not place your application dependencies here; they belong
     // in the individual module build.gradle files
-    if (rootProject.ext.isLocalMode) {
+    if (rootProject.ext.usePlugin) {
       //格式为 --> group:module:version
       classpath "com.xander.plugin:dev-plugin:1.1.0"
     }
@@ -62,15 +50,22 @@ allprojects {
   }
   // add dependency substitution rules
   configurations.all {
-    resolutionStrategy.dependencySubstitution {
-      // Substitute project and module dependencies
-      if (rootProject.ext.editPluginLib) {
-        //substitute project(':asm-plugin-library') with module('com.xander.plugin.asm:plugin-library:1.1.0')
-        substitute module('com.xander.plugin.asm:plugin-library') with project(':asm-plugin-library')
+    resolutionStrategy {
+      dependencySubstitution { /*DependencySubstitution dependency ->*/
+        //println "${project.name} --- ${dependency.toString()}"
+        //println "${project.name} ------ ${rootProject.ext.useLocalPluginLib}"
+        // Substitute project and module dependencies
+        if (rootProject.ext.useLocalPluginLib) {
+          //substitute project(':asm-plugin-library') with module('com.xander.plugin.asm:plugin-library:1.1.0')
+          substitute module('com.xander.plugin.asm:plugin-library') with project(':asm-plugin-library')
+        }
+        substitute module('com.xander.dev.tool:dev-tool') with project(':dev-tool-library')
+        // Substitute one module dependency for another
+        //substitute module('org.gradle:api:2.0') with module('org.gradle:api:2.1')
       }
-      substitute module('com.xander.dev.tool:dev-tool') with project(':dev-tool-library')
-      // Substitute one module dependency for another
-      //substitute module('org.gradle:api:2.0') with module('org.gradle:api:2.1')
+      //eachDependency { DependencyResolveDetails details ->
+      //  println "${project.name} ------ ${details.getRequested()}"
+      //}
     }
   }
 }
