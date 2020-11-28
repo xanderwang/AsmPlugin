@@ -1,5 +1,6 @@
 package com.xander.plugin.asm
 
+import com.android.build.api.transform.Transform
 import com.android.build.gradle.AppExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -13,10 +14,12 @@ import org.gradle.api.Project
  */
 open abstract class BasePlugin : Plugin<Project> {
 
-    override fun apply(target: Project) {
-        val android = target.extensions.getByType(AppExtension::class.java)
-        registerTransform(android, target)
+  override fun apply(project: Project) {
+    val android = project.extensions.getByType(AppExtension::class.java)
+    createTransforms(project).forEach {
+      android.registerTransform(it)
     }
+  }
 
-    abstract fun registerTransform(android: AppExtension, target: Project)
+  abstract fun createTransforms(project: Project): List<Transform>
 }

@@ -107,8 +107,8 @@ open class BaseWeaverFactory : IWeaverFactory {
   }
 
   override fun isWearableClass(className: String): Boolean {
-    return (className.endsWith(".class") && !className.contains("R\$")
-        && !className.contains("R.class") && !className.contains("BuildConfig.class"))
+    return (className.endsWith(".class") && !className.contains(".R\$")
+        && !className.contains(".R.class"))
   }
 
   override fun createClassVisitor(classWriter: ClassWriter): ClassVisitor {

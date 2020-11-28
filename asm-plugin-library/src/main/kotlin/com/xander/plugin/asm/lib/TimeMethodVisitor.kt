@@ -7,7 +7,7 @@ import org.objectweb.asm.Type
 import org.objectweb.asm.commons.LocalVariablesSorter
 
 open class TimeMethodVisitor(var methodName: String, access: Int, desc: String?, mv: MethodVisitor?)
-  : LocalVariablesSorter(Opcodes.ASM5, access, desc, mv), Opcodes {
+  : LocalVariablesSorter(Opcodes.ASM9, access, desc, mv), Opcodes {
 
   /**
    * 访问注解

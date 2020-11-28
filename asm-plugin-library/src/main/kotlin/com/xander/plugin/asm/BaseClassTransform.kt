@@ -15,7 +15,19 @@ import java.io.IOException
 import java.util.*
 import java.util.concurrent.ForkJoinPool
 
-open abstract class BaseTransform(val project: Project) : Transform() {
+open abstract class BaseClassTransform(protected val project: Project) : Transform() {
+
+  private var pluginConfig = PluginConfig.debug
+
+  private var weaver: IWeaverFactory
+
+  private val waitableExecutor: WaitableExecutor = WaitableExecutor.useGlobalSharedThreadPool()
+
+  private val executorFacade: ExecutorServiceAdapter = ExecutorServiceAdapter(
+      name,
+      name,
+      ForkJoinPool.commonPool()
+  )
 
   override fun getName(): String {
     return this.javaClass.simpleName
@@ -39,7 +51,26 @@ open abstract class BaseTransform(val project: Project) : Transform() {
 
   abstract fun createWeaver(): BaseWeaverFactory
 
-  abstract fun createPluginConfig(): PluginConfig
+  private fun createPluginConfig(): PluginConfig {
+    return project.extensions.getByName(getConfigName()) as PluginConfig
+  }
+
+  abstract fun getConfigName(): String
+
+  companion object {
+    private val SCOPES: MutableSet<QualifiedContent.Scope> = HashSet()
+
+    init {
+      SCOPES.add(QualifiedContent.Scope.PROJECT)
+      SCOPES.add(QualifiedContent.Scope.SUB_PROJECTS)
+      SCOPES.add(QualifiedContent.Scope.EXTERNAL_LIBRARIES)
+    }
+  }
+
+  init {
+    weaver = createWeaver()
+    project.extensions.create(getConfigName(), PluginConfig::class.java)
+  }
 
   private fun applyConfig(config: PluginConfig) {
     BaseWeaverFactory.pluginConfig = config
@@ -47,7 +78,6 @@ open abstract class BaseTransform(val project: Project) : Transform() {
     TimeMethodVisitor.pluginConfig = config
   }
 
-  @Throws(TransformException::class, InterruptedException::class, IOException::class)
   override fun transform(transformInvocation: TransformInvocation) {
     //super.transform(transformInvocation)
     val skip = Reference(false)
@@ -61,7 +91,7 @@ open abstract class BaseTransform(val project: Project) : Transform() {
     } else if ("release" == variantName) {
       skip.set(pluginConfig.releaseSkip)
     }
-    println("name: $name variant:$variantName ,skip:${skip.get()}")
+    println("name: $name, variant:$variantName, skip:${skip.get()}")
     val startTime = System.currentTimeMillis()
     val outputProvider = transformInvocation.outputProvider
     if (!transformInvocation.isIncremental) {
@@ -97,7 +127,8 @@ open abstract class BaseTransform(val project: Project) : Transform() {
             Status.REMOVED -> if (dest.exists()) FileUtils.forceDelete(dest)
           }
         } else {
-          //Forgive me!, Some project will store 3rd-party aar for serveral copies in dexbuilder folder,,unknown issue.
+          // Forgive me!, Some project will store 3rd-party aar for serveral copies
+          // in dexbuilder folder,unknown issue.
           if (inDuplicatedClassSafeMode() && !flagForCleanDexBuilderFolder) {
             cleanDexBuilderFolder(dest)
             flagForCleanDexBuilderFolder = true
@@ -162,13 +193,18 @@ open abstract class BaseTransform(val project: Project) : Transform() {
         }
       }
     }
-
-    //waitableExecutor.waitForTasksWithQuickFail(true)
+    if (pluginConfig.useExecutor) {
+      try {
+        waitableExecutor.waitForTasksWithQuickFail<Void>(false)
+      } catch (e: Exception) {
+        e.printStackTrace()
+      }
+    }
     val costTime = System.currentTimeMillis() - startTime
     println("plugin: $name, cost time: $costTime ms")
   }
 
-  private fun transformSingleFile(inputFile: File, outputFile: File, srcBaseDir: String) {
+  protected fun transformSingleFile(inputFile: File, outputFile: File, srcBaseDir: String) {
     if (pluginConfig.log) {
       println("transformSingleFile inputFile:${inputFile.absolutePath}")
       println("transformSingleFile outputFile:${outputFile.absolutePath}")
@@ -178,7 +214,6 @@ open abstract class BaseTransform(val project: Project) : Transform() {
     }
   }
 
-  @Throws(IOException::class)
   protected fun transformDir(sourceDir: File, inputDirPath: String, outputDirPath: String) {
     if (sourceDir.isDirectory) {
       val files = sourceDir.listFiles()
@@ -206,7 +241,7 @@ open abstract class BaseTransform(val project: Project) : Transform() {
     }
   }
 
-  private fun transformFileList(sourceList: ArrayList<File>, inputDirPath: String, outputDirPath: String) {
+  protected fun transformFileList(sourceList: ArrayList<File>, inputDirPath: String, outputDirPath: String) {
     if (pluginConfig.log) {
       println("transformFileList inputDirPath:${inputDirPath}")
       println("transformFileList outputDirPath:${outputDirPath}")
@@ -222,7 +257,7 @@ open abstract class BaseTransform(val project: Project) : Transform() {
     }
   }
 
-  private fun transformJar(srcJar: File, destJar: File) {
+  protected fun transformJar(srcJar: File, destJar: File) {
     if (pluginConfig.log) {
       println("transformJar srcJar:${srcJar.absolutePath}")
       println("transformJar destJar:${destJar.absolutePath}")
@@ -230,8 +265,7 @@ open abstract class BaseTransform(val project: Project) : Transform() {
     weaver.weaveJar(srcJar, destJar)
   }
 
-  private fun cleanDexBuilderFolder(dest: File) {
-    // waitableExecutor.execute {
+  protected fun cleanDexBuilderFolder(dest: File) {
     try {
       val dexBuilderDir = replaceLastPart(dest.absolutePath, name, "dexBuilder")
       //intermediates/transforms/dexBuilder/debug
@@ -244,10 +278,9 @@ open abstract class BaseTransform(val project: Project) : Transform() {
     } catch (e: Exception) {
       e.printStackTrace()
     }
-    // }
   }
 
-  private fun replaceLastPart(originString: String, replacement: String, toReplace: String): String {
+  protected fun replaceLastPart(originString: String, replacement: String, toReplace: String): String {
     val start = originString.lastIndexOf(replacement)
     val builder = StringBuilder()
     builder.append(originString.substring(0, start))
@@ -258,28 +291,5 @@ open abstract class BaseTransform(val project: Project) : Transform() {
 
   protected open fun inDuplicatedClassSafeMode(): Boolean {
     return false
-  }
-
-  private var pluginConfig = PluginConfig.debug
-
-  private var weaver: IWeaverFactory
-
-  private val waitableExecutor: WaitableExecutor = WaitableExecutor.useGlobalSharedThreadPool()
-
-  private val executorFacade: ExecutorServiceAdapter = ExecutorServiceAdapter(
-      name,
-      "",
-      ForkJoinPool.commonPool()
-  )
-
-  companion object {
-    private val SCOPES: MutableSet<QualifiedContent.Scope> = HashSet()
-  }
-
-  init {
-    weaver = createWeaver()
-    SCOPES.add(QualifiedContent.Scope.PROJECT)
-    SCOPES.add(QualifiedContent.Scope.SUB_PROJECTS)
-    SCOPES.add(QualifiedContent.Scope.EXTERNAL_LIBRARIES)
   }
 }
