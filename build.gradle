@@ -1,5 +1,7 @@
 buildscript {
 
+  ext.lib_version = '1.1.4'
+
   ext.kotlin_version = '1.4.20'
 
   ext.repoPath = rootProject.file('./repos').absolutePath
@@ -32,7 +34,7 @@ buildscript {
     // in the individual module build.gradle files
     if (rootProject.ext.usePlugin) {
       //格式为 --> group:module:version
-      classpath "com.xander.plugin:dev-plugin:1.1.2"
+      classpath "com.xander.plugin:dev-plugin:${rootProject.ext.lib_version}"
     }
   }
 }

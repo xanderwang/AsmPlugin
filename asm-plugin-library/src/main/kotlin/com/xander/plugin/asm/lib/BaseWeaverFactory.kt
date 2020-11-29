@@ -6,6 +6,7 @@ import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.MethodVisitor
+import org.objectweb.asm.util.TraceClassVisitor
 import java.io.*
 import java.nio.file.Files
 import java.nio.file.attribute.FileTime
@@ -34,6 +35,7 @@ open class BaseWeaverFactory : IWeaverFactory {
         try {
           weaveSingleClassToByteArray(originalFile)
         } catch (exception: Exception) {
+          println("weaveJar error entry:${entry.name}, outEntry:$outEntry")
           exception.printStackTrace()
           IOUtils.toByteArray(originalFile)
         }
@@ -83,6 +85,7 @@ open class BaseWeaverFactory : IWeaverFactory {
         fos.close()
         inputStream.close()
       } catch (exception: Exception) {
+        println("weaveSingleClass error:$className")
         exception.printStackTrace()
         FileUtils.copyFile(inputFile, outputFile)
       }
@@ -93,7 +96,8 @@ open class BaseWeaverFactory : IWeaverFactory {
 
   private fun weaveSingleClassToByteArray(inputStream: InputStream): ByteArray {
     val classWriter = ClassWriter(ClassWriter.COMPUTE_MAXS)
-    // val classWriter: ClassWriter = ExtendClassWriter(classLoader, ClassWriter.COMPUTE_MAXS)
+    // val traceClassVisitor = TraceClassVisitor(classWriter, PrintWriter(System.out))
+    // val extendClassWriter = ExtendClassWriter(classLoader, ClassWriter.COMPUTE_MAXS)
     // 自定义逻辑开始介入
     val classWriterWrapper = wrapClassWriter(classWriter)
     val classReader = ClassReader(inputStream)
@@ -102,17 +106,18 @@ open class BaseWeaverFactory : IWeaverFactory {
     return classWriter.toByteArray()
   }
 
-  private fun wrapClassWriter(classWriter: ClassWriter): ClassVisitor {
-    return createClassVisitor(classWriter)
+  private fun wrapClassWriter(classVisitor: ClassVisitor): ClassVisitor {
+    return createClassVisitor(classVisitor)
   }
 
   override fun isWearableClass(className: String): Boolean {
     return (className.endsWith(".class") && !className.contains(".R\$")
         && !className.contains(".R.class"))
+    // return false
   }
 
-  override fun createClassVisitor(classWriter: ClassWriter): ClassVisitor {
-    return BaseClassVisitor(classWriter, this)
+  override fun createClassVisitor(classVisitor: ClassVisitor): ClassVisitor {
+    return BaseClassVisitor(classVisitor, this)
   }
 
   override fun createMethodVisitor(methodName: String, access: Int, desc: String?, mv: MethodVisitor): MethodVisitor {

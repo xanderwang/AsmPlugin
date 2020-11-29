@@ -22,10 +22,11 @@ open interface IWeaverFactory {
   /**
    * 创建类编辑器
    */
-  fun createClassVisitor(classWriter: ClassWriter): ClassVisitor
+  fun createClassVisitor(classVisitor: ClassVisitor): ClassVisitor
 
   /**
    * 创建方法编辑器
    */
-  fun createMethodVisitor(methodName: String, access: Int, desc: String?, mv: MethodVisitor): MethodVisitor
+  fun createMethodVisitor(methodName: String, access: Int, desc: String?,
+                          mv: MethodVisitor): MethodVisitor
 }

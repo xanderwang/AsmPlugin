@@ -4,7 +4,8 @@ import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
 
-open class BaseClassVisitor(cv: ClassVisitor, private var iWeaverFactory: IWeaverFactory) : ClassVisitor(Opcodes.ASM5, cv) {
+open class BaseClassVisitor(cv: ClassVisitor, private var iWeaverFactory: IWeaverFactory) :
+    ClassVisitor(Opcodes.ASM9, cv) {
 
   override fun visit(version: Int, access: Int, name: String?, signature: String?,
                      superName: String?, interfaces: Array<out String>?) {

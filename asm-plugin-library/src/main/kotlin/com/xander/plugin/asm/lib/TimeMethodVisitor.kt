@@ -7,15 +7,15 @@ import org.objectweb.asm.Type
 import org.objectweb.asm.commons.LocalVariablesSorter
 
 open class TimeMethodVisitor(var methodName: String, access: Int, desc: String?, mv: MethodVisitor?)
-  : LocalVariablesSorter(Opcodes.ASM9, access, desc, mv), Opcodes {
+  : LocalVariablesSorter(Opcodes.ASM6, access, desc, mv), Opcodes {
 
   /**
    * 访问注解
    */
   override fun visitAnnotation(desc: String, visible: Boolean): AnnotationVisitor {
-    val desc = desc.replace("/",".")
-    if (desc.contains(pluginConfig.timeAnnotation)) {
-      if (pluginConfig.methodLog) println("TimeMethodVisitor visitAnnotation :$desc")
+    val annotationDesc = desc.replace("/",".")
+    if (annotationDesc.contains(pluginConfig.timeAnnotation)) {
+      if (pluginConfig.methodLog) println("TimeMethodVisitor visitAnnotation :$annotationDesc")
       debugTime = true
     }
     return super.visitAnnotation(desc, visible)
@@ -23,7 +23,6 @@ open class TimeMethodVisitor(var methodName: String, access: Int, desc: String?,
 
   /** Starts the visit of the method's code, if any (i.e. non abstract method). */
   override fun visitCode() {
-    super.visitCode()
     if (debugTime) {
       timeVarIndex = newLocal(Type.LONG_TYPE)
       // 调用方法
@@ -37,14 +36,14 @@ open class TimeMethodVisitor(var methodName: String, access: Int, desc: String?,
       // 存入变量
       mv.visitVarInsn(Opcodes.LSTORE, timeVarIndex)
     }
+    super.visitCode()
   }
 
   override fun visitInsn(opcode: Int) {
-    if (debugTime) {
+    if (debugTime&&false) {
       if (opcode >= Opcodes.IRETURN && opcode <= Opcodes.RETURN || opcode == Opcodes.ATHROW) {
         // 读取方法名
-        mv.visitLdcInsn(methodName)
-
+        mv.visitLdcInsn(pluginConfig.timeAnnotation + "-" + methodName)
         // 获取时间
         mv.visitMethodInsn(
             Opcodes.INVOKESTATIC,
