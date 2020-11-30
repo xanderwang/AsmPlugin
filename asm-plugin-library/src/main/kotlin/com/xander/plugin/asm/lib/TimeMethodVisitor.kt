@@ -40,7 +40,7 @@ open class TimeMethodVisitor(var methodName: String, access: Int, desc: String?,
   }
 
   override fun visitInsn(opcode: Int) {
-    if (debugTime&&false) {
+    if (debugTime) {
       if (opcode >= Opcodes.IRETURN && opcode <= Opcodes.RETURN || opcode == Opcodes.ATHROW) {
         // 读取方法名
         mv.visitLdcInsn(pluginConfig.timeAnnotation + "-" + methodName)
@@ -60,7 +60,7 @@ open class TimeMethodVisitor(var methodName: String, access: Int, desc: String?,
         // 调用打印时间方法
         mv.visitMethodInsn(
             Opcodes.INVOKESTATIC,
-            "com/xander/dev/tool/help/LogHelper",
+            "com/xander/dev/tool/DevLog",
             "cost",
             "(Ljava/lang/String;J)V",
             false
