@@ -1,80 +1,80 @@
 buildscript {
 
-  ext.lib_version = '1.1.4'
+    ext.asm_lib_version = '1.0.0'
 
-  ext.kotlin_version = '1.4.20'
+    ext.kotlin_version = '1.7.10'
 
-  ext.repoPath = rootProject.file('./repos').absolutePath
-//  println("ext.repoPath:${rootProject.ext.repoPath}")
+    ext.repoPath = rootProject.file('repos').absolutePath
+    println("ext.repoPath: ${rootProject.ext.repoPath}")
 
-  ext.hasPluginLib = rootProject.file('/repos/com/xander/plugin/asm/plugin-library/maven-metadata.xml').exists()
-  ext.hasPlugin = rootProject.file('/repos/com/xander/plugin/asm/maven-metadata.xml').exists()
+    ext.hasPluginLib = rootProject.file('repos/io/github/xander/plugin-library/maven-metadata.xml').exists()
+    ext.hasPlugin = rootProject.file('repos/io/github/xander/plugin-asm/maven-metadata.xml').exists()
 
-  ext.useLocalPluginLib = true // 用来控制 plugin 项目时否依赖本地的项目
+    // 用来控制 plugin 项目时否依赖本地的项目
+    ext.inSourceCodeMode = true
 
-  ext.usePlugin = true // 是否使用插件，可以手动打开
+    // 是否使用插件，可以手动打开
+    ext.usePlugin = ext.hasPlugin && ext.hasPluginLib && true
+    println("ext.usePlugin: ${rootProject.ext.usePlugin}")
 
-  ext.debugPlugin = true
-
-  repositories {
-    maven { url uri("${rootProject.ext.repoPath}") }
-    maven { url "https://maven.aliyun.com/repository/jcenter" }
-    maven { url "https://maven.aliyun.com/repository/google" }
-    google()
-    jcenter()
-  }
-
-  dependencies {
-    classpath 'com.android.tools.build:gradle:3.6.4'
-    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${rootProject.ext.kotlin_version}"
-
-    classpath 'com.novoda:bintray-release:0.9.2'
-
-    // NOTE: Do not place your application dependencies here; they belong
-    // in the individual module build.gradle files
-    if (rootProject.ext.usePlugin) {
-      //格式为 --> group:module:version
-      classpath "com.xander.plugin:dev-plugin:${rootProject.ext.lib_version}"
+    repositories {
+        maven { url uri("${rootProject.ext.repoPath}") }
+        maven { url "https://maven.aliyun.com/repository/jcenter" }
+        maven { url "https://maven.aliyun.com/repository/google" }
+        mavenCentral()
+        google()
     }
-  }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.0.4'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${rootProject.ext.kotlin_version}"
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+
+        if (rootProject.ext.usePlugin) {
+            //格式为 --> group:module:version
+            classpath "io.github.xander:plugin-asm:${rootProject.ext.asm_lib_version}"
+        }
+    }
 }
 
 def isWindows() {
-  def os_name = System.properties['os.name'].toString().toLowerCase()
-  println "os name: ${os_name}"
-  return os_name.contains('window')
+    def os_name = System.properties['os.name'].toString().toLowerCase()
+    println "os name: ${os_name}"
+    return os_name.contains('window')
 }
 
 allprojects {
-  repositories {
-    maven { url uri("${rootProject.ext.repoPath}") }
-    maven { url "https://maven.aliyun.com/repository/jcenter" }
-    maven { url "https://maven.aliyun.com/repository/google" }
-    google()
-    jcenter()
-  }
-  // add dependency substitution rules
-  configurations.all {
-    resolutionStrategy {
-      dependencySubstitution { /*DependencySubstitution dependency ->*/
-        //println "${project.name} --- ${dependency.toString()}"
-        //println "${project.name} ------ ${rootProject.ext.useLocalPluginLib}"
-        // Substitute project and module dependencies
-        if (rootProject.ext.useLocalPluginLib) {
-          //substitute project(':asm-plugin-library') with module('com.xander.plugin.asm:plugin-library:1.1.0')
-          substitute module('com.xander.plugin.asm:plugin-library') with project(':asm-plugin-library')
-        }
-        substitute module('com.xander.dev.tool:dev-tool') with project(':dev-tool-library')
-        // Substitute one module dependency for another
-        //substitute module('org.gradle:api:2.0') with module('org.gradle:api:2.1')
-      }
-      //eachDependency { DependencyResolveDetails details ->
-      //  println "${project.name} ------ ${details.getRequested()}"
-      //}
+    println "enter ${project.name}"
+    repositories {
+        maven { url uri("${rootProject.ext.repoPath}") }
+        maven { url "https://maven.aliyun.com/repository/jcenter" }
+        maven { url "https://maven.aliyun.com/repository/google" }
+        mavenCentral()
+        google()
     }
-  }
+    // add dependency substitution rules
+    configurations.all {
+        resolutionStrategy {
+            dependencySubstitution {
+                /* DependencySubstitution dependency -> */
+                // Substitute project and module dependencies
+                if (rootProject.ext.inSourceCodeMode) {
+                    substitute module('io.github.xander:dev-tool') with project(':dev-tool-library')
+                    substitute module('io.github.xander:plugin-asm') with project(':asm-plugin')
+                    substitute module('io.github.xander:plugin-library') with project(':asm-plugin-library')
+                }
+            }
+            // eachDependency { DependencyResolveDetails details ->
+            //     println "${project.name} ------ ${details.getRequested()}"
+            // }
+        }
+    }
+
+    println "exit ${project.name}"
 }
 
 task clean(type: Delete) {
-  delete rootProject.buildDir
+    delete rootProject.buildDir
 }

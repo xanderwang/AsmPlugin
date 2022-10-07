@@ -1,8 +1,8 @@
 //include ':apt_lib'
 //include ':apt_process'
+
 include ':dev-tool-library'
 include ':asm-plugin-library'
 include ':asm-plugin'
+
 include ':demo-app'
-
-

@@ -1,3 +1,3 @@
 ext {
-  isLocalMode = project.file('./repos/com/xander/xaop/gradle').exists()
+    isLocalMode = project.file('./repos/com/xander/xaop/gradle').exists()
 }

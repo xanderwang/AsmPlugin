@@ -1,68 +1,51 @@
 apply plugin: 'groovy'
-apply plugin: 'maven'
 apply plugin: 'kotlin'
-apply plugin: 'com.novoda.bintray-release'
+apply plugin: 'maven-publish'
 
 dependencies {
-  implementation gradleApi() //gradle sdk
-  implementation localGroovy() //groovy sdk
+    implementation gradleApi() //gradle sdk
+    implementation localGroovy() //groovy sdk
 
-  implementation "com.xander.plugin.asm:plugin-library:${rootProject.ext.lib_version}"
+    implementation 'com.android.tools.build:gradle:3.6.1'
+    implementation 'com.android.tools.build:gradle-api:3.6.4'
+
+    //noinspection GradleDependency
+    implementation 'org.ow2.asm:asm:9.0'
+    //noinspection GradleDependency
+    implementation 'org.ow2.asm:asm-util:9.0'
+    //noinspection GradleDependency
+    implementation 'org.ow2.asm:asm-commons:9.0'
+
+    implementation "io.github.xander:plugin-library:${rootProject.ext.asm_lib_version}"
 }
 
-// 项目的地址
-def _siteUrl = 'https://github.com/XanderWang/AsmPlugin'
-def _name = 'asm'
-def _group = 'com.xander.plugin'
-def _artifactId = 'dev-plugin'
-def _version = rootProject.ext.lib_version
+def _groupId = 'io.github.xander'
+def _artifactId = 'plugin-asm'
+def _version = rootProject.ext.asm_lib_version
+// Because the components are created only during the afterEvaluate phase, you must
+// configure your publications using the afterEvaluate() lifecycle method.
+afterEvaluate {
+    publishing {
+        publications {
+            // Creates a Maven publication called "release".
+            release(MavenPublication) {
+                // Applies the component for the release build variant.
+                from components.java
 
-uploadArchives {
-  repositories.mavenDeployer {
-    repository(url: uri("${rootProject.ext.repoPath}"))
-    pom.groupId = _group
-    pom.artifactId = _artifactId
-    pom.version = _version
-  }
-}
+                // You can then customize attributes of the publication as shown below.
+                groupId = _groupId
+                artifactId = _artifactId
+                version = _version
+            }
+        }
 
-task sourcesJar(type: Jar, dependsOn: classes) {
-  archiveClassifier = 'sources'
-  from sourceSets.main.allSource
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-  archiveClassifier = 'javadoc'
-  from javadoc.destinationDir
-}
-
-javadoc {
-  //jav doc采用utf-8编码否则会报“GBK的不可映射字符”错误
-  options {
-    encoding "UTF-8"
-    charSet 'UTF-8'
-  }
-}
-
-artifacts {
-  archives javadocJar
-  archives sourcesJar
-}
-
-publish {
-  // 各个字段的含义见 https://github.com/novoda/bintray-release/wiki/Configuration-of-the-publish-closure
-  Properties properties = new Properties()
-  properties.load(project.rootProject.file('local.properties').newDataInputStream())
-  def user = properties.getProperty('BINTRAY_USER')
-  def key = properties.getProperty('BINTRAY_KEY')
-  userOrg = user
-  repoName = 'maven'
-  groupId = _group
-  artifactId = _artifactId
-  publishVersion = _version
-  dryRun = false
-  desc = 'a dev tool lib for asm-plugin lib'
-  website = _siteUrl
-  bintrayUser = user
-  bintrayKey = key
+        repositories {
+            maven {
+                name = 'local'
+                // change to point to your repo, e.g. http://my.org/repo
+                // url = layout.buildDirectory.dir('repo')
+                url = rootProject.ext.repoPath
+            }
+        }
+    }
 }
